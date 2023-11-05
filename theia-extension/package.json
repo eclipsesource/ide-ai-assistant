@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "engines": {
+    "yarn": ">=1.7.0 <2",
+    "node": ">=14.18.0"
+  },
+  "scripts": {
+    "build:browser": "yarn --cwd browser-app bundle",
+    "build:electron": "yarn --cwd electron-app bundle",
+    "watch:browser": "yarn --cwd browser-app watch",
+    "prepare": "lerna run prepare",
+    "postinstall": "theia check:theia-version",
+    "start:browser": "yarn --cwd browser-app start",
+    "start:electron": "yarn --cwd electron-app start",
+    "watch": "lerna run --parallel watch",
+    "test": "cd ide-ai-assistant && yarn test"
+  },
+  "devDependencies": {
+    "lerna": "2.4.0"
+  },
+  "workspaces": [
+    "ide-ai-assistant", "browser-app", "electron-app"
+  ]
+}
