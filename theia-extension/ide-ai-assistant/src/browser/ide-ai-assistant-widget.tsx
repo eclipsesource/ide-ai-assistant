@@ -69,7 +69,7 @@ export class IdeAiAssistantWidget extends ReactWidget {
     }
 
     protected async APIRequest(): Promise<chatMessage> {
-        let newMessage = await this.aiAssistantService.getAnswer(this.currentMessage).then((response) => {
+        const newMessage = await this.aiAssistantService.getAnswer(this.currentMessage).then((response) => {
             return response;
         })
             .catch((error) => {
@@ -83,7 +83,7 @@ export class IdeAiAssistantWidget extends ReactWidget {
     protected async sendMessage(): Promise<void> {
         if (this.currentMessage != '') {
             this.messages.push({ content: (document.getElementById('chat-input') as HTMLInputElement).value, role: 'user' });
-            let newMessage = await this.APIRequest();
+            const newMessage = await this.APIRequest();
             if (newMessage.role != 'error') {
                 this.currentMessage = '';
                 this.messages.push(newMessage);

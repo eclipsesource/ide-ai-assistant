@@ -1,5 +1,5 @@
 import { injectable } from '@theia/core/shared/inversify';
-import { AIAssistantBackendService, BackendClient, chatMessage } from '../common/protocol';
+import { AIAssistantBackendService, chatMessage } from '../common/protocol';
 import { OpenAI } from "openai";
 
 const openai = new OpenAI({
@@ -12,7 +12,7 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
     dispose(): void {
         // do nothing
     }
-    setClient(client: BackendClient): void {
+    setClient(): void {
         //this.client = client;
     }
 
@@ -27,6 +27,6 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
             messages: [{ role: 'user', content: question }],
             model: 'gpt-3.5-turbo',
           });
-        return new Promise<chatMessage>((resolve, reject) => { resolve(chatCompletion.choices[0].message) });
+        return new Promise<chatMessage>((resolve) => { resolve(chatCompletion.choices[0].message) });
     }
 }
