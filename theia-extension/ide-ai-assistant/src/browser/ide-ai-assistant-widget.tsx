@@ -1,22 +1,22 @@
-import * as React from 'react';
-import { injectable, postConstruct, inject } from '@theia/core/shared/inversify';
-import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import { MessageService } from '@theia/core';
 import { Message } from '@theia/core/lib/browser';
-
-type chatMessage = {
-    message: string,
-    from: string
-}
+import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
+import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
+import * as React from 'react';
+import { AIAssistantBackendService, chatMessage } from '../common/protocol';
 
 @injectable()
 export class IdeAiAssistantWidget extends ReactWidget {
-    messages: chatMessage[] = [{ message: 'Hello, how can I help you?', from: 'bot' }]
+    messages: chatMessage[] = [{ content: 'Hello, how can I help you?', role: 'assistant' }]
     currentMessage: string = '';
-
+    changeApiKey: string = '';
+    protected APIKey: string = '';
 
     static readonly ID = 'ide-ai-assistant:widget';
     static readonly LABEL = 'AI Assistant';
+
+    @inject(AIAssistantBackendService)
+    protected readonly aiAssistantService!: AIAssistantBackendService;
 
     @inject(MessageService)
     protected readonly messageService!: MessageService;
@@ -37,14 +37,13 @@ export class IdeAiAssistantWidget extends ReactWidget {
 
     render(): React.ReactElement {
         const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            console.log("hei " + event.target.value);
             this.currentMessage = event.target.value;
             this.update();
         }
 
         const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === 'Enter') {
-                this.displayMessage();
+                this.sendMessage();
             }
         }
 
@@ -53,9 +52,9 @@ export class IdeAiAssistantWidget extends ReactWidget {
                 <div className='chat-messages-container'>
                     {this.messages.map((message, index) => {
                         return <>
-                            <div key={index} className={`chat-message-container ${message.from == "user" ? "user-message-container" : "bot-message-container"}`}>
-                                <div className={`chat-message-box ${message.from == "user" ? "user-message-box" : "bot-message-box"}`}>
-                                    {message.message}
+                            <div key={index} className={`chat-message-container ${message.role == "user" ? "user-message-container" : "bot-message-container"}`}>
+                                <div className={`chat-message-box ${message.role == "user" ? "user-message-box" : "bot-message-box"}`}>
+                                    {message.content}
                                 </div>
                             </div>
                         </>
@@ -63,20 +62,36 @@ export class IdeAiAssistantWidget extends ReactWidget {
                 </div>
                 <div className='chat-inputs-container'>
                     <input id='chat-input' type='text' value={this.currentMessage} onChange={handleChange} onKeyDown={handleKeyDown} />
-                    <button id='displayMessageButton' onClick={() => this.displayMessage()}>Send</button>
+                    <button id='displayMessageButton' onClick={() => this.sendMessage()}>Send</button>
                 </div>
             </div>
         </div>
     }
 
-    protected displayMessage(): void {
+    protected async APIRequest(): Promise<chatMessage> {
+        let newMessage = await this.aiAssistantService.getAnswer(this.currentMessage).then((response) => {
+            return response;
+        })
+            .catch((error) => {
+                // Improve error handling later...
+                console.error('Error getting answer:', error);
+                return { content: 'Error getting answer', role: 'error' };
+            });
+        return newMessage;
+    }
+
+    protected async sendMessage(): Promise<void> {
         if (this.currentMessage != '') {
-            console.log((document.getElementById('chat-input') as HTMLInputElement).value)
-            this.messages.push({ message: (document.getElementById('chat-input') as HTMLInputElement).value, from: 'user' });
-            this.currentMessage = '';
-            this.messages.push({ message: `Response: ${this.messages[this.messages.length - 1].message}`, from: 'bot' });
-            this.messageService.info('Congratulations: IdeAiAssistant Widget Successfully Created!');
-            this.update();
+            this.messages.push({ content: (document.getElementById('chat-input') as HTMLInputElement).value, role: 'user' });
+            let newMessage = await this.APIRequest();
+            if (newMessage.role != 'error') {
+                this.currentMessage = '';
+                this.messages.push(newMessage);
+                this.messageService.info('Congratulations: IdeAiAssistant Widget Successfully Created!');
+                this.update();
+            } else {
+                this.messageService.error('Error: API Failed');
+            }
         }
     }
 
