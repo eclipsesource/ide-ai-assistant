@@ -8,12 +8,12 @@ const openai = new OpenAI({
 
 @injectable()
 export class OpenAIAssistantImpl implements AIAssistantBackendService {
-    private client?: BackendClient;
+    //private client?: BackendClient;
     dispose(): void {
         // do nothing
     }
     setClient(client: BackendClient): void {
-        this.client = client;
+        //this.client = client;
     }
 
     // TODO: This API can fail and we would need to handle that. I believe we need to look into choices[0].finish_reason
