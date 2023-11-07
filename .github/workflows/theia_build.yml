@@ -1,0 +1,25 @@
+run-name: Building, linting and testing
+on: push
+
+jobs:
+  build-lint-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install modules
+      run: |
+        cd theia-extension
+        yarn
+    - name: Build Browser App
+      run: |
+        cd theia-extension
+        yarn build:browser
+    - name: Run tests
+      run: |
+        cd theia-extension
+        yarn test
+    - name: Run eslint
+      run: |
+        cd theia-extension/ide-ai-assistant
+        yarn
+        yarn eslint .
