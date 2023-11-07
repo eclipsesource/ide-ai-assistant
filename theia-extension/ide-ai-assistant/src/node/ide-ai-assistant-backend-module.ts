@@ -8,7 +8,7 @@ export default new ContainerModule(bind => {
     bind(ConnectionHandler).toDynamicValue(ctx =>
         new RpcConnectionHandler<BackendClient>(AIASSISTANTSERVICE_BACKEND_PATH, client => {
             const server = ctx.container.get<OpenAIAssistantImpl>(AIAssistantBackendService);
-            server.setClient(client);
+            server.setClient();
             client.onDidCloseConnection(() => server.dispose());
             return server;
         })
