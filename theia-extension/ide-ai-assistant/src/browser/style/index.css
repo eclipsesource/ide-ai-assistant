@@ -1,0 +1,65 @@
+#widget-container h2 {
+    color: var(--theia-ui-font-color1);
+    font-size: 12px;
+    font-weight: 400;
+    padding: 10px;
+    text-transform: uppercase;
+}
+
+#widget-container {
+    display: flex;
+    height: 100%;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.chat-container .chat-messages-container {
+    flex: 1;
+    overflow-y: scroll
+}
+
+.chat-message-container {
+    display: flex; 
+    flex-direction: row;
+}
+
+.user-message-container {
+    justify-content: flex-end;
+}
+
+.bot-message-container {
+    justify-content: flex-start;
+}
+
+.chat-message-box{
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px; 
+    max-width: 50%; 
+}
+
+.chat-message-container .user-message-box{
+    background-color: darkblue;
+}
+
+.chat-message-container .bot-message-box{
+    background-color: darkgreen;
+}
+
+.chat-inputs-container{
+    flex: 0; 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#chat-input {
+    flex: 1;
+    font-size: 15px;
+    height: 20px;
+}

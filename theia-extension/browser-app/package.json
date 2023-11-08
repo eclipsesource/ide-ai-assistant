@@ -1,0 +1,39 @@
+{
+  "private": true,
+  "name": "browser-app",
+  "version": "0.0.0",
+  "dependencies": {
+    "@theia/core": "latest",
+    "@theia/editor": "latest",
+    "@theia/filesystem": "latest",
+    "@theia/markers": "latest",
+    "@theia/messages": "latest",
+    "@theia/monaco": "latest",
+    "@theia/navigator": "latest",
+    "@theia/preferences": "latest",
+    "@theia/process": "latest",
+    "@theia/terminal": "latest",
+    "@theia/workspace": "latest",
+    "@theia/callhierarchy": "latest",
+    "@theia/file-search": "latest",
+    "@theia/git": "latest",
+    "@theia/mini-browser": "latest",
+    "@theia/outline-view": "latest",
+    "@theia/plugin-ext-vscode": "latest",
+    "@theia/preview": "latest",
+    "@theia/search-in-workspace": "latest",
+    "ide-ai-assistant": "0.0.0"
+  },
+  "devDependencies": {
+    "@theia/cli": "latest"
+  },
+  "scripts": {
+    "bundle": "yarn rebuild && theia build --mode development",
+    "rebuild": "theia rebuild:browser",
+    "start": "theia start",
+    "watch": "yarn rebuild && theia build --watch --mode development"
+  },
+  "theia": {
+    "target": "browser"
+  }
+}

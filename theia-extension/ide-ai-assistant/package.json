@@ -1,0 +1,44 @@
+{
+  "name": "ide-ai-assistant",
+  "keywords": [
+    "theia-extension"
+  ],
+  "version": "0.0.0",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@theia/core": "latest",
+    "@typescript-eslint/eslint-plugin": "^6.9.1",
+    "@typescript-eslint/parser": "^6.9.1",
+    "eslint": "^8.53.0",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^11.2.7",
+    "@types/jest": "^26.0.20",
+    "@typescript-eslint/eslint-plugin": "^6.9.1",
+    "@typescript-eslint/parser": "^6.9.1",
+    "eslint": "^8.53.0",
+    "jest": "^26.6.3",
+    "rimraf": "latest",
+    "ts-jest": "^26.5.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2",
+    "openai": "^4.0.0"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "clean": "rimraf lib",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest --config configs/jest.config.ts"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/ide-ai-assistant-frontend-module",
+      "backend": "lib/node/ide-ai-assistant-backend-module"
+    }
+  ]
+}
