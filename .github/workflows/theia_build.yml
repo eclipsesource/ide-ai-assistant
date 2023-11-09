@@ -8,18 +8,15 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install modules
       run: |
-        cd theia-extension
         yarn
     - name: Build Browser App
       run: |
-        cd theia-extension
         yarn build:browser
-    - name: Run tests
+    - name: Run theia-extension tests
       run: |
-        cd theia-extension
-        yarn test
+        yarn test:theia
     - name: Run eslint
       run: |
-        cd theia-extension/ide-ai-assistant
+        cd extensions/ide-ai-assistant
         yarn
         yarn eslint .
