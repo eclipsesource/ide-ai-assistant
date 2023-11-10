@@ -22,5 +22,6 @@ jobs:
         yarn eslint .
     - name: Run vsc-extension tests
       run: |
-        DISPLAY=$HOST_IP:10.0
         yarn test:vsc
+      env:
+        DISPLAY: ':99.0'
