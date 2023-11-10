@@ -5,23 +5,38 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}/extensions/ai-assistant-vsc",
+            ],
+            "name": "Launch VSC Extension",
+            "outFiles": [
+                "${workspaceRoot}/extensions/ai-assistant-vsc/out/**/*.js"
+            ],
+            "preLaunchTask": "${defaultBuildTask}",
+            "request": "launch",
+            "type": "extensionHost"
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Start Browser Backend",
-            "program": "${workspaceRoot}/browser-app/src-gen/backend/main.js",
+            "program": "${workspaceRoot}/apps/browser-app/src-gen/backend/main.js",
             "args": [
                 "--loglevel=debug",
                 "--port=3000",
-                "--no-cluster"
+                "--no-cluster",
+                "--plugins=local-dir:${workspaceRoot}/plugins"
             ],
             "env": {
-                "NODE_ENV": "development"
+                "NODE_ENV": "development",
+                "NODE_OPTIONS": "--enable-source-maps"
             },
             "sourceMaps": true,
             "outFiles": [
                 "${workspaceRoot}/node_modules/@theia/*/lib/**/*.js",
-                "${workspaceRoot}/*/lib/**/*.js",
-                "${workspaceRoot}/browser-app/src-gen/**/*.js"
+                "${workspaceRoot}/extensions/*/lib/**/*.js",
+                "${workspaceRoot}/extensions/*/out/**/*.js",
+                "${workspaceRoot}/apps/*/src-gen/**/*.js"
             ],
             "smartStep": true,
             "internalConsoleOptions": "openOnSessionStart",
@@ -35,7 +50,7 @@
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
             },
-            "program": "${workspaceRoot}/electron-app/src-gen/backend/electron-main.js",
+            "program": "${workspaceRoot}/apps/electron-app/src-gen/backend/electron-main.js",
             "protocol": "inspector",
             "args": [
                 "--loglevel=debug",
@@ -47,9 +62,10 @@
             },
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/electron-app/src-gen/backend/electron-main.js",
-                "${workspaceRoot}/electron-app/src-gen/backend/main.js",
-                "${workspaceRoot}/*/lib/**/*.js",
+                "${workspaceRoot}/apps/electron-app/src-gen/backend/electron-main.js",
+                "${workspaceRoot}/apps/electron-app/src-gen/backend/main.js",
+                "${workspaceRoot}/extensions/*/lib/**/*.js",
+                "${workspaceRoot}/extensions/*/out/**/*.js",
                 "${workspaceRoot}/node_modules/@theia/*/lib/**/*.js"
             ],
             "smartStep": true,
