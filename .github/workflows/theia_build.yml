@@ -22,9 +22,5 @@ jobs:
         yarn eslint .
     - name: Run vsc-extension tests
       run: |
+        DISPLAY=$HOST_IP:10.0
         yarn test:vsc
-    - name: Run eslint
-      run: |
-        cd extensions/ai-assistant-vsc
-        yarn
-        yarn run lint
