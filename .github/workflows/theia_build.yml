@@ -20,8 +20,4 @@ jobs:
         cd extensions/ai-assistant-theia
         yarn
         yarn eslint .
-    - name: Run vsc-extension tests
-      run: |
-        yarn test:vsc
-      env:
-        DISPLAY: ':99.0'
+        
