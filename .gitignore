@@ -4,3 +4,5 @@ lib
 *.log
 apps/*-app/*
 !apps/*-app/package.json
+extensions/ai-assistant-vsc/out
+extensions/ai-assistant-vsc/.vscode-test
