@@ -12,12 +12,12 @@
     "start:browser": "yarn --cwd apps/browser-app start",
     "start:electron": "yarn --cwd apps/electron-app start",
     "watch": "lerna run --parallel watch",
-    "test:theia": "yarn --cwd extensions/ide-ai-assistant test"
+    "test:theia": "yarn --cwd extensions/ai-assistant-theia test"
   },
   "devDependencies": {
     "lerna": "2.4.0"
   },
   "workspaces": [
-    "extensions/ide-ai-assistant", "apps/browser-app", "apps/electron-app"
+    "extensions/ai-assistant-theia", "apps/browser-app", "apps/electron-app"
   ]
 }
