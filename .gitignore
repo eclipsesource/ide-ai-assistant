@@ -2,5 +2,5 @@ node_modules
 .browser_modules
 lib
 *.log
-*-app/*
-!*-app/package.json
+apps/*-app/*
+!apps/*-app/package.json

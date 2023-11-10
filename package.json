@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "engines": {
+    "yarn": ">=1.7.0 <2",
+    "node": ">=14.18.0"
+  },
+  "scripts": {
+    "build:browser": "yarn --cwd apps/browser-app bundle",
+    "build:electron": "yarn --cwd apps/electron-app bundle",
+    "prepare": "lerna run prepare",
+    "postinstall": "theia check:theia-version",
+    "start:browser": "yarn --cwd apps/browser-app start",
+    "start:electron": "yarn --cwd apps/electron-app start",
+    "watch": "lerna run --parallel watch",
+    "test:theia": "yarn --cwd extensions/ai-assistant-theia test"
+  },
+  "devDependencies": {
+    "lerna": "2.4.0"
+  },
+  "workspaces": [
+    "extensions/ai-assistant-theia", "apps/browser-app", "apps/electron-app"
+  ]
+}
