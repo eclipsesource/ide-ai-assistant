@@ -20,4 +20,9 @@ jobs:
         cd extensions/ai-assistant-theia
         yarn
         yarn eslint .
+    - name: Run vsc-extension tests
+      run: |
+        cd extensions/ai-assistant-vsc
+        yarn
+        xvfb-run -a yarn test
         
