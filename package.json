@@ -9,8 +9,8 @@
     "build:electron": "yarn --cwd apps/electron-app bundle",
     "prepare": "lerna run prepare",
     "postinstall": "theia check:theia-version",
-    "start:browser": "yarn --cwd apps/browser-app start",
-    "start:electron": "yarn --cwd apps/electron-app start",
+    "start:browser": "yarn --cwd apps/browser-app start --plugins=local-dir:../../plugins",
+    "start:electron": "yarn --cwd apps/electron-app start --plugins=local-dir:../../plugins",
     "watch": "lerna run --parallel watch",
     "test:theia": "yarn --cwd extensions/ai-assistant-theia test",
     "test:vsc": "yarn --cwd extensions/ai-assistant-vsc test"

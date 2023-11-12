@@ -12,10 +12,29 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ai-assistant",
+          "title": "AI Assistant",
+          "icon": "src/resources/chat-bot.svg"
+        }
+      ]
+    },
+    "views": {
+      "ai-assistant": [
+        {
+          "type": "webview",
+          "id": "ai-assistant-vsc.chatboxView",
+          "name": "AI Assistant"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "ai-assistant-vsc.helloWorld",
-        "title": "Hello World"
+        "command": "ai-assistant-vsc.openAssistant",
+        "category": "AI Assistant",
+        "title": "Open Assistant"
       }
     ]
   },
