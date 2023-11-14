@@ -13,8 +13,10 @@
     "start:electron": "yarn --cwd apps/electron-app start --plugins=local-dir:../../plugins",
     "start": "lerna run start --parallel --scope backend --scope browser-app",
     "watch": "lerna run --parallel watch",
+    "test:backend": "yarn --cwd backend test",
     "test:theia": "yarn --cwd extensions/ai-assistant-theia test",
-    "test:vsc": "yarn --cwd extensions/ai-assistant-vsc test"
+    "test:vsc": "yarn --cwd extensions/ai-assistant-vsc test",
+    "lint": "eslint . --ext .ts"
   },
   "devDependencies": {
     "lerna": "2.4.0"

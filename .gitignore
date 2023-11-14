@@ -8,3 +8,4 @@ extensions/ai-assistant-vsc/out
 extensions/ai-assistant-vsc/.vscode-test
 .env
 plugins/
+__snapshots__

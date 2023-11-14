@@ -1,12 +1,11 @@
 import morgan, { StreamOptions } from "morgan";
-
-import Logger from "./logger";
+import { Logger } from ".";
 
 // Override the stream method by telling
 // Morgan to use our custom logger instead of the console.log.
 const stream: StreamOptions = {
   // Use the http severity
-  write: (message) => Logger.http(message),
+  write: (message) => new Logger().http(message),
 };
 
 // Skip all the Morgan http log if the 
@@ -20,7 +19,7 @@ const skip = () => {
 };
 
 // Build the morgan middleware
-const morganMiddleware = morgan(
+export const morganMiddleware = morgan(
   // Define message format string (this is the default one).
   // The message format is made from tokens, and each token is
   // defined inside the Morgan library.
@@ -30,5 +29,3 @@ const morganMiddleware = morgan(
   // See the methods above.
   { stream, skip }
 );
-
-export default morganMiddleware;

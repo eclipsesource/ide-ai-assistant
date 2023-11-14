@@ -1,24 +1,24 @@
-import express, { Request, Response } from "express";
-import { PORT } from "./config";
+// The order of these imports is important
+import 'reflect-metadata';
+
+import { InversifyExpressServer } from 'inversify-express-utils';
+//
 import container from "./backendmodule";
-import { AIASSISTANTSERVICE_BACKEND_PATH, AIAssistantBackendService, MessageRequest, MessageResponse } from "./protocol";
-import logger from "./loggers/logger";
-import morganMiddleware from "./loggers/morgan";
+import { Logger, PORT, serverConfig, serverErrorConfig } from "./config";
+import './controllers/AIAssistant.Controller';
+import * as dotenv from "dotenv";
 
-const app = express();
-app.use(express.json());
-app.use(morganMiddleware);
+dotenv.config();
 
-const AIAssistantService = container.get<AIAssistantBackendService>(AIAssistantBackendService);
+export async function Bootstrap() {
+  const server = new InversifyExpressServer(container);
+  server.setConfig(serverConfig);
+  process.env.NODE_ENV === "production" ? server.setErrorConfig(serverErrorConfig): null;
 
-app.post(AIASSISTANTSERVICE_BACKEND_PATH, (req: Request<MessageRequest>, res: Response<MessageResponse>) => {
-  AIAssistantService.getAnswer(req.body).then((result) => {
-    res.send(result);
-  }).catch((error) => {
-    res.send({ error: error });
-  });
-});
+  const app = server.build();
+  app.listen(PORT, () =>
+    new Logger().info(`Server up on http://127.0.0.1:${PORT}/`)
+  );
+}
 
-app.listen(PORT, () => {
-  logger.info(`Server Listening on PORT: ${PORT}`);
-});
+Bootstrap();

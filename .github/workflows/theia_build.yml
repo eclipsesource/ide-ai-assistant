@@ -9,6 +9,12 @@ jobs:
     - name: Install modules
       run: |
         yarn
+    - name: Run eslint on entire project
+      run: | 
+        yarn eslint .
+    - name: Run Backend tests
+      run: |
+        yarn test:backend
     - name: Build Browser App
       run: |
         yarn build:browser

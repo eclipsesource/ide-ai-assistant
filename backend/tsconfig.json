@@ -1,5 +1,10 @@
 {
     "compilerOptions": {
+        "types": [
+            "reflect-metadata",
+            "@types/jest",
+            "@types/supertest"
+        ],
         "esModuleInterop": true,
         "skipLibCheck": true,
         "declaration": true,
@@ -27,5 +32,8 @@
     },
     "include": [
         "src"
+    ],
+    "exclude": [
+        "src/**/*.test.ts"
     ]
 }
