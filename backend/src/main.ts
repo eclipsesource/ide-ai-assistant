@@ -1,14 +1,19 @@
-// The order of these imports is important
+
+/**
+ * Entry point of the application.
+ * Configures and starts the server.
+ * @packageDocumentation
+ */
+import * as dotenv from "dotenv";
 import 'reflect-metadata';
+dotenv.config();
 
 import { InversifyExpressServer } from 'inversify-express-utils';
-//
+
 import container from "./backendmodule";
 import { Logger, PORT, serverConfig, serverErrorConfig } from "./config";
 import './controllers/AIAssistant.Controller';
-import * as dotenv from "dotenv";
 
-dotenv.config();
 
 export async function Bootstrap() {
   const server = new InversifyExpressServer(container);

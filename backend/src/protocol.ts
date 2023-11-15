@@ -1,14 +1,35 @@
+import {
+    ArrayMinSize,
+    IsArray,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+} from 'class-validator';
+
 //Frontend protocols
-export type Message = {
-    role: "assistant"|"user",
-    content: string | null,
+export class Message {
+    @IsString()
+    @IsNotEmpty()
+    role: "assistant" | "user";
+    @IsString()
+    @IsNotEmpty()
+    content: string | null;
 };
 
-export type MessageRequest = {
-    messages: Message[],
-    projectContext?: string,
-    userContext?: string,
-};
+export class MessageRequest {
+    @IsArray()
+    @ArrayMinSize(1)
+    @IsNotEmpty()
+    messages: Message[];
+
+    @IsString()
+    @IsOptional()
+    projectContext?: string;
+
+    @IsString()
+    @IsOptional()
+    userContext?: string;
+}
 
 export type MessageResponse = {
     error: string,
