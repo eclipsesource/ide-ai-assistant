@@ -16,6 +16,9 @@ The example of how to build the Theia-based applications with the ide-ai-assista
 
 Please install all necessary [prerequisites](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites).
 
+To call the openAI API a API key is required.
+So in the backend project you need to add `process.env.API_KEY = [YOUR KEY]`.
+
 ## Running the browser example
 
     yarn build:browser
