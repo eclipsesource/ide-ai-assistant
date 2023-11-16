@@ -6,6 +6,7 @@
  */
 import * as dotenv from "dotenv";
 import 'reflect-metadata';
+dotenv.config({ path: 'secrets.env' });
 dotenv.config();
 
 import { InversifyExpressServer } from 'inversify-express-utils';

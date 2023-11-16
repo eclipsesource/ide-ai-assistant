@@ -50,7 +50,7 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
         let error = "";
         const chatCompletion = await openai.chat.completions.create({
             messages: messages,
-            model: 'gpt-3.5-turbo',
+            model: process.env.OPENAI_MODEL ? process.env.OPENAI_MODEL : "gpt-3.5-turbo",
         }).catch((e) => { this.logger.error(e); error = e.error.message; });
 
         if (chatCompletion === undefined) {
