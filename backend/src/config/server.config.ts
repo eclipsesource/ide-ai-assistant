@@ -1,5 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
-import { morganMiddleware } from ".";
+import { Logger, morganMiddleware } from ".";
 import { BaseException, InternalServerException } from './exception.config';
 
 export const PORT = process.env.PORT || 3001;
@@ -10,12 +10,17 @@ export async function serverConfig(app: Application) {
 }
 
 export function serverErrorConfig(app: Application) {
+    const logger = new Logger();
     app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
         if (err && err instanceof BaseException) {
-            return res.status(err.statusCode).json(err);
+            logger.error(err.message);
+            return res.status(err.statusCode).json({ error: err });
         }
 
         if (err) {
+            if (err.stack) {
+                logger.error(err.stack);
+            }
             return res.status(500).json(new InternalServerException(err.message));
         }
 

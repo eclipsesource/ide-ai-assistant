@@ -6,9 +6,9 @@
  * @requires ../config
  * @requires ../protocol
  */
-import { inject, injectable } from '@theia/core/shared/inversify';
+import { injectable } from '@theia/core/shared/inversify';
 import { OpenAI } from "openai";
-import { Logger } from '../config';
+import { BadRequestException, BaseException } from '../config';
 import { AIAssistantBackendService, Message, MessageRequest, MessageResponse } from '../protocol';
 
 
@@ -18,45 +18,33 @@ const openai = new OpenAI({
 
 @injectable()
 export class OpenAIAssistantImpl implements AIAssistantBackendService {
-    
-    constructor(@inject(Logger) private readonly logger: Logger) { }
 
     async getAnswer(request: MessageRequest): Promise<MessageResponse> {
         const [isValidRequest, errorMessage] = this.validRequest(request);
         if (!isValidRequest) {
-            return new Promise<MessageResponse>((_, reject) => (reject(errorMessage)));
+            throw new BadRequestException(errorMessage);
         }
 
-        let error = "";
-        const newContent = await this.getAnswerFromOpenAI(request.messages)
-            .catch((e: string) => {
-                error = e;
-                const message: Message = { role: "assistant", content: "An error has occured. So we are not able to answer your question." };
-                return message;
-            });
+        const newContent = await this.getAnswerFromOpenAI(request.messages);
 
-        return { error: error, content: newContent };
+        return new Promise<MessageResponse>((resolve) => {
+            resolve({ content: newContent });
+        });
     }
 
     private validRequest(request: MessageRequest): [boolean, string] {
-        if (openai.apiKey === "") {
-            return [false, "OpenAI API Key is not set"];
-        }
-
+        // This is more of a placeholder function. If we want to add more validation to the request, we can do it here.
         return [true, ""];
     }
 
     private async getAnswerFromOpenAI(messages: Message[]): Promise<Message> {
-        let error = "";
         const chatCompletion = await openai.chat.completions.create({
             messages: messages,
             model: process.env.OPENAI_MODEL ? process.env.OPENAI_MODEL : "gpt-3.5-turbo",
-        }).catch((e) => { this.logger.error(e); error = e.error.message; });
+        }).catch((e) => {
+            throw new BaseException(e.error.type, e.status, e.error.message);
+        });
 
-        if (chatCompletion === undefined) {
-            return new Promise<Message>((_, reject) => { reject(error); });
-        }
-
-        return new Promise<Message>((resolve) => { resolve(chatCompletion.choices[0].message); });
+        return new Promise<Message>((resolve) => { resolve(chatCompletion!.choices[0].message); });
     }
 }

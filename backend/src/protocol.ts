@@ -32,8 +32,7 @@ export class MessageRequest {
 }
 
 export type MessageResponse = {
-    error: string,
-    content?: Message,
+    content: Message,
 };
 
 //OpenAI Backend Service

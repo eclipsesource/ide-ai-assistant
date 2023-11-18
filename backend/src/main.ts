@@ -19,11 +19,11 @@ import './controllers/AIAssistant.Controller';
 export async function Bootstrap() {
   const server = new InversifyExpressServer(container);
   server.setConfig(serverConfig);
-  process.env.NODE_ENV === "production" ? server.setErrorConfig(serverErrorConfig): null;
+  server.setErrorConfig(serverErrorConfig);
 
   const app = server.build();
   app.listen(PORT, () =>
-    new Logger().info(`Server up on http://127.0.0.1:${PORT}/`)
+    new Logger().info(`Server up on PORT: ${PORT}/`)
   );
 }
 
