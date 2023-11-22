@@ -5,14 +5,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const provider = new AIAssistantProvider(context.extensionUri);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
-	const disposable = vscode.commands.registerCommand('ai-assistant-vsc.openAssistant', () => {
-		vscode.window.showInformationMessage('Opening widget from ai-assistant-vsc!');
-	});
-	context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
 
 class AIAssistantProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'ai-assistant-vsc.chatboxView';
@@ -32,10 +28,35 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 				this._extensionUri
 			]
 		};
-		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);	
+		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
-		return '';
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'main.js'));
+		const nonce = getNonce();
+		return `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>AI Assistant</title>
+			</head>
+			<body>
+			<label>Enter your question here: </label> <br><br>
+			<input id="user-question" type="text"></input>
+			<button type="submit" id="ask-bot-button">GO</button> <br><br>
+			<p id="bot-response"> </p>
+			<script nonce="${nonce}" src="${scriptUri}"></script>
+			</body>
+			</html>`;
 	}
+}
+
+function getNonce() {
+	let text = '';
+	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
 }

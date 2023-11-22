@@ -29,14 +29,7 @@
           "name": "AI Assistant"
         }
       ]
-    },
-    "commands": [
-      {
-        "command": "ai-assistant-vsc.openAssistant",
-        "category": "AI Assistant",
-        "title": "Open Assistant"
-      }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
