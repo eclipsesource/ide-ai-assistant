@@ -1,18 +1,33 @@
 {
+	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
-		"module": "Node16",
-		"target": "ES2022",
-		"outDir": "out",
+		"skipLibCheck": true,
+		"declaration": true,
+		"declarationMap": true,
+		"noImplicitAny": true,
+		"noImplicitOverride": true,
+		"noEmitOnError": false,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"strictNullChecks": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"downlevelIteration": true,
+		"resolveJsonModule": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"target": "ES2017",
 		"lib": [
-			"ES2022"
+			"ES2017",
+			"ES2020.Promise"
 		],
-		"sourceMap": true,
+		"composite": true,
 		"rootDir": "src",
-		"strict": true,   /* enable all strict type-checking options */
-		"skipLibCheck": true
-		/* Additional Checks */
-		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
-		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
-		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
-	}
+		"outDir": "lib",
+		"sourceMap": true
+	},
+	"include": [
+		"src"
+	],
+	"references": []
 }

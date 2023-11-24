@@ -6,14 +6,22 @@ interface ErrorObject {
 	linkData: string;
 	errorMsg: string;
 }
+import { activateTheia } from './theia';
+
+const THEIA_APP_NAME = 'Eclipse Theia';
 
 // This method is called when your extension is activated
-export function activate(context: vscode.ExtensionContext) {
+export const activate = async (context: vscode.ExtensionContext) => {
 
 	const provider = new AIAssistantProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
+	const disposable = vscode.commands.registerCommand('ai-assistant-vsc.openAssistant', () => {
+		vscode.window.showInformationMessage('Opening widget from ai-assistant-vsc!');
+	});
+	context.subscriptions.push(disposable);
 
-}
+	await activateTheia(THEIA_APP_NAME);
+};
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
@@ -32,7 +40,7 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 		_context: vscode.WebviewViewResolveContext,
 		_token: vscode.CancellationToken,
 	) {
-		this._view = webviewView;
+		// this._view = webviewView;
 		webviewView.webview.options = {
 			// Allow scripts in the webview
 			enableScripts: true,

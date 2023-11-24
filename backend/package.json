@@ -4,6 +4,8 @@
   "description": "",
   "main": "lib/main",
   "scripts": {
+    "build": "tsc",
+    "clean": "git clean -f -x ./node_modules ./lib",
     "start": "tsc && node .",
     "lint": "eslint . --ext .ts",
     "test": "jest -u"

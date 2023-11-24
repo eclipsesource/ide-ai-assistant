@@ -7,7 +7,6 @@
   "scripts": {
     "build:browser": "yarn --cwd apps/browser-app bundle",
     "build:electron": "yarn --cwd apps/electron-app bundle",
-    "prepare": "lerna run prepare",
     "postinstall": "theia check:theia-version",
     "start:browser": "yarn --cwd apps/browser-app start --plugins=local-dir:../../plugins",
     "start:electron": "yarn --cwd apps/electron-app start --plugins=local-dir:../../plugins",
@@ -17,10 +16,16 @@
     "test:theia": "yarn --cwd extensions/ai-assistant-theia test",
     "test:vsc": "yarn --cwd extensions/ai-assistant-vsc test",
     "lint": "eslint . --ext .ts",
-    "clean": "lerna run clean && lerna clean --yes && git clean -f -x ./node_modules"
+    "prepare": "yarn build && yarn package",
+    "clean": "lerna run clean && lerna clean --yes && git clean -f -x ./node_modules",
+    "build": "lerna run build",
+    "package": "lerna run package"
   },
   "devDependencies": {
-    "lerna": "2.4.0"
+    "lerna": "^6.0.1"
+  },
+  "resolutions": {
+    "@types/react": "^18.0.15"
   },
   "workspaces": [
     "extensions/*",

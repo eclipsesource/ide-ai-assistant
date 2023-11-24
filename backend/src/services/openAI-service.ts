@@ -6,7 +6,7 @@
  * @requires ../config
  * @requires ../protocol
  */
-import { injectable } from '@theia/core/shared/inversify';
+import { injectable } from 'inversify';
 import { OpenAI } from "openai";
 import { BadRequestException, BaseException } from '../config';
 import { AIAssistantBackendService, Message, MessageRequest, MessageResponse } from '../protocol';

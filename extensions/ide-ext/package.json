@@ -1,0 +1,23 @@
+{
+  "name": "@extension/ide-ext",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Theia - Example code to demonstrate Theia API",
+  "license": "EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0",
+  "scripts": {
+    "clean": "git clean -f -x ./node_modules ./lib",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@extension/api": "1.0.0",
+    "@theia/core": "1.36.0",
+    "@theia/plugin": "1.36.0",
+    "@theia/plugin-ext": "1.36.0"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/frontend",
+      "backend": "lib/backend"
+    }
+  ]
+}

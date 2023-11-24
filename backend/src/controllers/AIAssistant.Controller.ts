@@ -6,8 +6,9 @@ import { validateBody } from "../config/validateBody-middleware";
 
 @controller(AIASSISTANTSERVICE_BACKEND_PATH)
 export class AIAssistantController {
-  constructor(@inject(AIAssistantBackendService) private aiAssistant: AIAssistantBackendService) { }
-
+  constructor() { }
+  
+  @inject(AIAssistantBackendService) private aiAssistant: AIAssistantBackendService;
   @httpPost("/", validateBody(MessageRequest))
   async getAnswer(req: Request, res: Response) {
     const response = await this.aiAssistant.getAnswer(req.body);

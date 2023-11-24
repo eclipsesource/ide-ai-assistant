@@ -9,3 +9,5 @@ secrets.env
 plugins/
 __snapshots__
 *webpack*
+*.tsbuildinfo
+*.vsix
