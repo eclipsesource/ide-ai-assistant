@@ -7,6 +7,10 @@ export const PORT = process.env.PORT || 3001;
 export async function serverConfig(app: Application) {
     app.use(express.json());
     app.use(morganMiddleware);
+    const cors = require('cors');
+    app.use(cors({
+        origin: '*'
+    }));
 }
 
 export function serverErrorConfig(app: Application) {
