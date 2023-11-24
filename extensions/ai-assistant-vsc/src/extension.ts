@@ -33,12 +33,15 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'main.js'));
+		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'main.css'));
 		const nonce = getNonce();
 		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
+				<!---- TODO: Add content-security-policy --->
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<link href="${styleMainUri}" rel="stylesheet">
 				<title>AI Assistant</title>
 			</head>
 			<body>
