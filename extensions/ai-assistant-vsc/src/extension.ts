@@ -15,11 +15,6 @@ export const activate = async (context: vscode.ExtensionContext) => {
 
 	const provider = new AIAssistantProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
-	const disposable = vscode.commands.registerCommand('ai-assistant-vsc.openAssistant', () => {
-		vscode.window.showInformationMessage('Opening widget from ai-assistant-vsc!');
-	});
-	context.subscriptions.push(disposable);
-
 	await activateTheia(THEIA_APP_NAME);
 };
 
