@@ -16,21 +16,35 @@ The example of how to build the Theia-based applications with the ide-ai-assista
 
 Please install all necessary [prerequisites](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites).
 
-To call the openAI API a API key is required.
-Create a file called `secrets.env` as this is ignored by git, then set `process.env.API_KEY = [YOUR KEY]`.
+To install and build the extensions and apps use the command 
+
+    yarn
+
+For the Backend to work a API KEY to OpenAI needs to be provided.
+This can be done by creating a file `backend/secrets.env` as this is ignored by git, then set `API_KEY = [YOUR KEY]`.
+
+There are several ways to start the program. 
+
+## Running the browser app with plugins
+If you want to run the Theia browser app with the plugins and the backend, we recommend using 
+
+    yarn start 
+
+or 
+    
+launching with the vscode configuration `Theia IDE` and starting the backend workspace seperatly
+Vscode will also automatically launch chrome.
 
 ## Running the browser example
 
-    yarn build:browser
     yarn start:browser
 
 *or:*
 
-    yarn build:browser
     cd browser-app
     yarn start
 
-*or:* launch `Start Browser Backend` configuration from VS code.
+*or:* launch `IDE (Backend)` configuration from VS code.
 
 Open http://localhost:3000 in the browser.
 
@@ -54,7 +68,7 @@ Open http://localhost:3000 in the browser.
 
 *or* run the tests of a specific package with
 
-    cd ide-ai-assistant
+    cd [workspace you want to test]
     yarn test
 
 

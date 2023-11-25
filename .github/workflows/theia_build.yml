@@ -11,24 +11,8 @@ jobs:
         yarn
     - name: Run eslint on entire project
       run: | 
-        yarn eslint .
-    - name: Run Backend tests
+        yarn lint
+    - name: Run tests
       run: |
-        yarn test:backend
-    - name: Build Browser App
-      run: |
-        yarn build:browser
-    - name: Run theia-extension tests
-      run: |
-        yarn test:theia
-    - name: Run eslint
-      run: |
-        cd extensions/ai-assistant-theia
-        yarn
-        yarn eslint .
-    - name: Run vsc-extension tests
-      run: |
-        cd extensions/ai-assistant-vsc
-        yarn
-        xvfb-run -a yarn test
+        yarn test
         
