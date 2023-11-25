@@ -2,10 +2,10 @@ node_modules
 .browser_modules
 lib
 *.log
-apps/*-app/*
-!apps/*-app/package.json
-extensions/ai-assistant-vsc/out
-extensions/ai-assistant-vsc/.vscode-test
+out
+src-gen
+.vscode-test
 secrets.env
 plugins/
 __snapshots__
+*webpack*
