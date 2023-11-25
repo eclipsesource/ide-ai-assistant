@@ -1,5 +1,5 @@
 {
-  "name": "ide-ai-assistant",
+  "name": "ai-assistant-theia",
   "keywords": [
     "theia-extension"
   ],
@@ -30,7 +30,7 @@
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build",
-    "clean": "rimraf lib",
+    "clean": "git clean -f -x ./node_modules ./lib/* ./*.tsbuildinfo",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest --config configs/jest.config.ts"

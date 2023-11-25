@@ -4,7 +4,6 @@
   "description": "AI Assistant for VS Code and the Theia IDE",
   "version": "1.0.0",
   "preview": true,
-  "private": true,
   "publisher": "EclipseSource",
   "author": "EclipseSource",
   "license": "MIT",
@@ -43,17 +42,17 @@
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "clean": "rimraf out",
-    "prepare2": "yarn run clean && yarn run compile && yarn symlink",
+    "test": "node ./lib/test/runTest.js",
+    "clean": "rimraf ../../plugins/ai-assistant-vsc && git clean -f -x ./node_modules ./lib ./tsconfig.tsbuildinfo",
     "symlink": "symlink-dir . ../../plugins/ai-assistant-vsc",
-    "prepare": "yarn build",
+    "prepare": "yarn build && yarn package",
     "build": "tsc && yarn symlink",
     "package": "vsce package --yarn"
   },
   "dependencies": {
     "@extension/api": "1.0.0",
-    "@types/vscode": "^1.84.0"
+    "@types/vscode": "^1.84.0",
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
     "vsce-yarn-patch": "^1.66.2",

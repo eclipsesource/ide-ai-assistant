@@ -5,7 +5,7 @@
   "description": "Theia - Example code to demonstrate Theia API",
   "license": "EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0",
   "scripts": {
-    "clean": "git clean -f -x ./node_modules ./lib",
+    "clean": "git clean -f -x ./node_modules ./lib ./*.tsbuildinfo",
     "build": "tsc"
   },
   "dependencies": {

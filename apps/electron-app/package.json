@@ -11,6 +11,7 @@
     "@theia/debug": "1.36.0",
     "@theia/editor": "1.36.0",
     "@theia/editor-preview": "1.36.0",
+    "@theia/electron": "1.36.0",
     "@theia/file-search": "1.36.0",
     "@theia/filesystem": "1.36.0",
     "@theia/getting-started": "1.36.0",

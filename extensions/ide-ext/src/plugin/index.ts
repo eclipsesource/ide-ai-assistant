@@ -40,12 +40,12 @@ const createApiFactory = (rpc: RPCProtocol): ApiFactory => {
             get onRequestMessage(): theia.Event<string> {
                 return apiExt.onRequestMessage;
             }
-        }
+        };
 
         return <typeof api> {
             host
         };
-    }
+    };
 };
 
 const overrideInternalLoad = (): void => {

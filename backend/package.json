@@ -8,7 +8,7 @@
     "clean": "git clean -f -x ./node_modules ./lib",
     "start": "tsc && node .",
     "lint": "eslint . --ext .ts",
-    "test": "jest -u"
+    "test": "cross-env NODE_ENV=test jest -u"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +27,7 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@types/jest": "^29.5.8",
     "@types/morgan": "^1.9.9",
     "jest": "^29.7.0",

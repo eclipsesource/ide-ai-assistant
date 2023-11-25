@@ -3,9 +3,17 @@ import 'reflect-metadata';
 import { InversifyExpressServer } from "inversify-express-utils";
 import request from 'supertest';
 import container from "../backendmodule";
-import { BaseException, serverConfig, serverErrorConfig } from "../config";
+import { BaseException, Logger, serverConfig, serverErrorConfig } from "../config";
 import { AIASSISTANTSERVICE_BACKEND_PATH, AIAssistantBackendService, MessageRequest, MessageResponse } from "../protocol";
 import { Server } from "http";
+
+class FakeLogger extends Logger {
+    error = jest.fn(() => { });
+    info = jest.fn(() => { });
+    warn = jest.fn(() => { });
+    debug = jest.fn(() => { });
+    http = jest.fn(() => { });
+};
 
 
 describe("Create the App with controllers and check that we get a response", () => {
@@ -19,6 +27,7 @@ describe("Create the App with controllers and check that we get a response", () 
     beforeAll(async () => {
         container.snapshot();
         const server = new InversifyExpressServer(container);
+        container.rebind<Logger>(Logger).toConstantValue(new FakeLogger());
         container.rebind<AIAssistantBackendService>(AIAssistantBackendService).toConstantValue(fakeAIAssistant);
         server.setConfig(serverConfig);
 
@@ -100,6 +109,7 @@ describe("Create the App with controllers and check that we get a response", () 
     beforeAll(async () => {
         container.snapshot();
         const server = new InversifyExpressServer(container);
+        container.rebind<Logger>(Logger).toConstantValue(new FakeLogger());
         container.rebind<AIAssistantBackendService>(AIAssistantBackendService)
             .toConstantValue(fakeAIAssistant);
 
@@ -126,6 +136,7 @@ describe("Create the App with controllers and check that we get a response", () 
         const response = await request(app).post(AIASSISTANTSERVICE_BACKEND_PATH).send(RandomValidRequest);
 
         //Assert
+        expect(container.get<Logger>(Logger).error).toHaveBeenCalled();
         expect(response.body).toEqual(expectedAnswer);
         expect(response.status).toBe(expectedAnswer.error.statusCode);
     });
