@@ -25,6 +25,9 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
             throw new BadRequestException(errorMessage);
         }
 
+        if (request.projectContext || request.userContext) {
+            this.generateContextMessage(request);
+        }
         const newContent = await this.getAnswerFromOpenAI(request.messages);
 
         return new Promise<MessageResponse>((resolve) => {
@@ -46,5 +49,24 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
         });
 
         return new Promise<Message>((resolve) => { resolve(chatCompletion!.choices[0].message); });
+    }
+
+    /**
+     * This function generates a context message based on the user and project context provided in the request.
+     * The generated context message is then added to the beginning of the messages array in the request.
+     *
+     * @param {MessageRequest} request - The request object containing userContext and projectContext.
+     */
+    private generateContextMessage(request: MessageRequest) {
+        var contextMessage = "";
+
+        if (request.userContext) {
+            contextMessage = "This is my user context: " + request.userContext + "\n";
+        }
+        if (request.projectContext) {
+            contextMessage = contextMessage + "This is my project context: " + request.projectContext;
+        }
+
+        request.messages.unshift({ role: "user", content: contextMessage });
     }
 }

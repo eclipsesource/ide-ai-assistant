@@ -8,12 +8,17 @@ class ChatApp {
         this.input = document.getElementById('input');
         this.messagesContainer = document.getElementById('chat-messages');
         this.endpoint = ENDPOINT;
+        this.displayLoading = false;
 
         // Setup initial message
-        this.addMessage('assistant', new Date().toLocaleString(), 'Hello, I am your AI assistant. How can I help you?', 1);
+        this.addMessage('assistant', new Date().toLocaleString(), 'Hello, I am your AI assistant. How can I help you?');
+        this.adjustTextareaHeight();
 
         // Setup event listeners
         this.setupEventListeners();
+
+        // Get contexts
+        this.contexts = {user: userContext, project: projectContext};
     }
 
     adjustTextareaHeight() {
@@ -29,8 +34,14 @@ class ChatApp {
         this.input.addEventListener('input', () => this.adjustTextareaHeight());
         window.addEventListener('message', (event) => this.handleReceivedMessage(event));
         window.addEventListener('resize', () => this.adjustTextareaHeight());
+        // Override default Enter behavior
+        this.input.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                document.getElementById('send').click();
+            }
+        });
     }
-
 
     addMessage(role, date, text) {
         text = text.replace(/\n+$/, '').replace(/\n/g, '<br>');
@@ -58,16 +69,18 @@ class ChatApp {
                 <div class="message-text msg-response"></div>
             </div>
         `;
-        this.messagesContainer.innerHTML += messageHtml;
+        if (this.displayLoading) {
+            this.messagesContainer.innerHTML += messageHtml;
+        }
     }
 
     removeLoader() {
+        this.displayLoading = false;
         const loader = document.getElementById('loader');
         if (loader) {
             loader.remove();
         }
     }
-
 
     async handleSendMessage() {
         const inputValue = this.input.value;
@@ -83,15 +96,22 @@ class ChatApp {
         let APIResponse;
 
         // Display loading message with delay
+        this.displayLoading = true;
         setTimeout(() => {
             this.vscode.postMessage({
                 command: 'loading',
             });
         }, 200);
 
+        const request = {
+            messages: this.allMessages,
+            projectContext: this.contexts.project,
+            userContext: this.contexts.user
+        }
+
         await fetch(this.endpoint, {
             method: "POST",
-            body: JSON.stringify({ messages: this.allMessages }),
+            body: JSON.stringify(request),
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
             }
