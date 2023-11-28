@@ -34,7 +34,29 @@
           "name": "AI Assistant"
         }
       ]
+    },
+    "commands": [
+      {
+        "command": "ai-assistant-vsc.openAssistant",
+        "category": "AI Assistant",
+        "title": "Open Assistant"
+      },
+      {
+        "command": "ai-assistant-vsc.registerObserver",
+        "title": "Register Observer VSCODE Extension"
+    },
+    {
+        "command": "ai-assistant-vsc.unregisterObserver",
+        "title": "Unregister Observer VSCODE Extension"
     }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "extension.message",
+        "contents": "[Show message](command:showMessage)"
+      }
+    ],
+    "menus": {}
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",

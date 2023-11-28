@@ -1,0 +1,42 @@
+{
+    "name": "terminalobserver",
+    "displayName": "terminalObserver",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "theiaPlugin": "^   1.36.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [ ],
+    "theiaPlugin": {
+        "backend": "./out/extension.js"
+    },
+    "contributes": {
+        "commands": [
+            {
+                "command": "terminalobserver.registerObserver",
+                "title": "Register Observer"
+            },
+            {
+                "command": "terminalobserver.unregisterObserver",
+                "title": "Unregister Observer"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "prepare": "yarn clean && yarn build",
+        "clean": "rimraf lib",
+        "compile": "tsc -p ./",
+        "build": "yarn compile && theia-plugin pack"
+     },
+    "devDependencies": {
+        "@theia/plugin-packager": "latest",
+        "@typescript-eslint/eslint-plugin": "^6.7.3",
+        "@typescript-eslint/parser": "^6.7.3",
+        "eslint": "^8.50.0",
+        "typescript": "^5.2.2"
+    }
+}

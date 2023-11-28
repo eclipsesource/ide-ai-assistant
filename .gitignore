@@ -1,6 +1,7 @@
 node_modules
 .browser_modules
 lib
+out
 *.log
 out
 src-gen

@@ -15,7 +15,10 @@ export const activate = async (context: vscode.ExtensionContext) => {
 
 	const provider = new AIAssistantProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
-	await activateTheia(THEIA_APP_NAME);
+	
+	if (vscode.env.appName === THEIA_APP_NAME) {
+		await activateTheia(THEIA_APP_NAME, context);
+	}
 };
 
 // This method is called when your extension is deactivated

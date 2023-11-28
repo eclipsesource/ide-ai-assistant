@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@extension/api": "1.0.0",
-    "@theia/core": "1.36.0",
-    "@theia/plugin": "1.36.0",
-    "@theia/plugin-ext": "1.36.0"
+    "@theia/core": "1.43.0",
+    "@theia/plugin": "1.43.0",
+    "@theia/plugin-ext": "1.43.0"
   },
   "theiaExtensions": [
     {
