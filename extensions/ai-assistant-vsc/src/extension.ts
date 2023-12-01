@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+const fs = require('fs');
 
 // This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -58,6 +59,18 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 		const chatStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatStyle.css'));
 		const nonce = getNonce();
 
+		// Manage context files
+		// const projectFile = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		// console.log(projectFile)
+		// const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
+		// contextReader.generateContexts();
+
+		const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').path;
+		const projectContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'project_context.txt').path;
+
+		const userContextContent = fs.readFileSync(userContextPath, 'utf8');
+		const projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
+
 		return `
 			<html>
 			<body>
@@ -72,8 +85,11 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 				</div>
 			
 				<link href="${chatStyleUri}" rel="stylesheet" />
+				<script nonce=${nonce}>
+					const userContext = ${JSON.stringify(userContextContent)}
+					const projectContext = ${JSON.stringify(projectContextContent)}
+				</script>
 				<script nonce=${nonce} src="${chatScriptUri}"></script>
-				
 			</body>
 			</html>
 		`;

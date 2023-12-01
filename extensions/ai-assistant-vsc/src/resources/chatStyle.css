@@ -25,6 +25,7 @@ html, body {
 
 .message-header {
   font-style: italic;
+  font-size: smaller;
   color: var(--vscode-editor-foreground);
 }
 
@@ -43,7 +44,8 @@ html, body {
 }
 
 .message-text {
-  padding: 10px;
+  padding: 5px;
+  font-size: small;
   border-radius: 8px;
   word-wrap: break-word;
   color: rgb(39, 39, 39);
@@ -67,6 +69,7 @@ html, body {
 }
 
 #input {
+  font-size: small;
   flex-grow: 1;
   border: 0;
   padding: 8px;
@@ -75,6 +78,10 @@ html, body {
   overflow: hidden;
   box-sizing: border-box;
   min-height: 0;
+}
+
+#input:focus {
+  outline-color: #3398DB;
 }
 
 #send {

@@ -1,0 +1,4 @@
+The project is based on Node.js
+The user is working on the project named @theia/monorepo
+This project is using yarn with version >=1.7.0 <2
+This project is using node with version >=16
