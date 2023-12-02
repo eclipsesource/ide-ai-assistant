@@ -31,6 +31,9 @@ class ChatApp {
             this.handleSendMessage();
             this.adjustTextareaHeight();
         });
+        document.getElementById('get-error').addEventListener('click', () => {
+            this.getError();
+        });
         this.input.addEventListener('input', () => this.adjustTextareaHeight());
         window.addEventListener('message', (event) => this.handleReceivedMessage(event));
         window.addEventListener('resize', () => this.adjustTextareaHeight());
@@ -93,8 +96,6 @@ class ChatApp {
         this.addMessage('user', new Date().toLocaleString(), inputValue);
         this.input.value = '';
 
-        let APIResponse;
-
         // Display loading message with delay
         this.displayLoading = true;
         setTimeout(() => {
@@ -102,7 +103,11 @@ class ChatApp {
                 command: 'loading',
             });
         }, 200);
+        this.getAPIResponse();
+    }
 
+    async getAPIResponse(debug = true) {
+        let APIResponse;
         const request = {
             messages: this.allMessages,
             projectContext: this.contexts.project,
@@ -129,9 +134,10 @@ class ChatApp {
                 APIResponse = `An error occured.\n ${error}`;
             });
 
+        const command = debug ? 'debug-command' : 'message'; 
         // Display the answer in the chat window
         this.vscode.postMessage({
-            command: 'message',
+            command: command,
             text: APIResponse
         });
     }
@@ -146,7 +152,22 @@ class ChatApp {
             case 'loading':
                 this.addLoader();
                 break;
+            case 'debug':
+                this.addMessage('user', new Date().toLocaleString(), message.errorMsg);
+                setTimeout(() => this.addLoader(), 200);
+                this.getAPIResponse(true);
+                break;
         }
+    }
+
+    getError() {
+        let linkData = 'The assistant has detected an error in your execution. Do you want to ask the assistant for the command to solve it?';
+        // Send a link to the terminal 
+        this.vscode.postMessage({
+            command: 'handle-error',
+            linkData: linkData,
+            errorMsg: 'I have an error in my terminal "missing glob package". Give me the terminal command to solve this.'
+        });
     }
 }
 
