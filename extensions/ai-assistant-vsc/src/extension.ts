@@ -82,11 +82,23 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 		// const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
 		// contextReader.generateContexts();
 
-		const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').path;
-		const projectContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'project_context.txt').path;
+		let userContextContent: any;
+		let projectContextContent: any;
+		
+		try {
+			const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').fsPath;
+			userContextContent = fs.readFileSync(userContextPath, 'utf8');
+			
+		} catch (err) {
+			console.error(`Unable to read user context file: ${err}`);
+		}
+		try {
+			const projectContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'project_context.txt').fsPath;
+			projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
 
-		const userContextContent = fs.readFileSync(userContextPath, 'utf8');
-		const projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
+		} catch (err) {
+			console.error(`Unable to read project context file: ${err}`);
+		}
 
 		return `
 			<html>
@@ -162,7 +174,7 @@ function showErrorNotification(message: ErrorObject, webviewView: vscode.Webview
 			// Post message to handle API call and add messages to the conversation
 			webviewView.webview.postMessage({ command: 'debug', errorMsg: message.errorMsg });
 		}
-	})
+	});
 }
 
 function parseCommand(text: string) {
