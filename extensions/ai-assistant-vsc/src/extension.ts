@@ -1,10 +1,16 @@
 import * as vscode from 'vscode';
 const fs = require('fs');
 
+interface ErrorObject {
+	command: string;
+	linkData: string;
+	errorMsg: string;
+}
+
 // This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
 
-	const provider = new AIAssistantProvider(context.extensionUri,  context);
+	const provider = new AIAssistantProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
 
 }
@@ -18,8 +24,8 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 	private _context: vscode.ExtensionContext;
 
 	constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
-        this._context = context;
-    }
+		this._context = context;
+	}
 
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
@@ -47,6 +53,17 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 					case 'loading':
 						webviewView.webview.postMessage({ command: 'loading' });
 						return;
+					case 'handle-error':
+						showErrorNotification(message, webviewView);
+						return;
+					case 'debug-command':
+						webviewView.webview.postMessage({ command: 'response', text: message.text });
+						const terminalCommand = parseCommand(message.text);
+						let terminal = getActiveTerminal();
+						if (terminal) {
+							terminal.sendText(terminalCommand, false);
+						};
+						return;
 				}
 			},
 			undefined,
@@ -65,11 +82,23 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 		// const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
 		// contextReader.generateContexts();
 
-		const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').path;
-		const projectContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'project_context.txt').path;
+		let userContextContent: any;
+		let projectContextContent: any;
+		
+		try {
+			const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').fsPath;
+			userContextContent = fs.readFileSync(userContextPath, 'utf8');
+			
+		} catch (err) {
+			console.error(`Unable to read user context file: ${err}`);
+		}
+		try {
+			const projectContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'project_context.txt').fsPath;
+			projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
 
-		const userContextContent = fs.readFileSync(userContextPath, 'utf8');
-		const projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
+		} catch (err) {
+			console.error(`Unable to read project context file: ${err}`);
+		}
 
 		return `
 			<html>
@@ -83,6 +112,7 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 						<button id="send">Send</button>
 					</div>
 				</div>
+				<button id="get-error">Trigger an error</button>
 			
 				<link href="${chatStyleUri}" rel="stylesheet" />
 				<script nonce=${nonce}>
@@ -103,4 +133,51 @@ function getNonce() {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
 	return text;
+}
+
+// Check if a terminal exists
+function ensureTerminalExists(): boolean {
+	if ((<any>vscode.window).terminals.length === 0) {
+		vscode.window.showErrorMessage('No active terminals');
+		return false;
+	}
+	return true;
+}
+
+// Function to select an active terminal
+function getActiveTerminal(): vscode.Terminal | undefined {
+	return vscode.window.activeTerminal;
+}
+
+// Picker to select terminals when there are multiple
+function selectTerminal(): Thenable<vscode.Terminal | undefined> {
+
+	interface TerminalQuickPickItem extends vscode.QuickPickItem {
+		terminal: vscode.Terminal;
+	}
+	const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
+	const items: TerminalQuickPickItem[] = terminals.map(t => {
+		return {
+			label: `name: ${t.name}`,
+			terminal: t
+		};
+	});
+	return vscode.window.showQuickPick(items).then(item => {
+		return item ? item.terminal : undefined;
+	});
+}
+
+function showErrorNotification(message: ErrorObject, webviewView: vscode.WebviewView) {
+	vscode.window.showInformationMessage(message.linkData, 'Yes', 'No').then(action => {
+		if (action === 'Yes') {
+			vscode.window.showInformationMessage('Please wait while the assistant types the command on your terminal. Check the chatbox for more information.');
+			// Post message to handle API call and add messages to the conversation
+			webviewView.webview.postMessage({ command: 'debug', errorMsg: message.errorMsg });
+		}
+	});
+}
+
+function parseCommand(text: string) {
+	const list = text.match(/```.*\n(.*)\n```/) || [];
+	return list.length > 0 ? list[1] : '';
 }

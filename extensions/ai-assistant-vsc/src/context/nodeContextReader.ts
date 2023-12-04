@@ -38,7 +38,7 @@ export class NodeContextReader extends AbstractContextReader {
    * @returns An array of strings representing project context.
    */
   getProjectContext(): string[] {
-    const projectContext: string[] = []
+    const projectContext: string[] = [];
     
     projectContext.push("The project is based on Node.js");
 
@@ -64,8 +64,8 @@ export class NodeContextReader extends AbstractContextReader {
    * @returns An array of strings representing user context.
    */
   getUserContext(): string[] {
-    const userContext: string[] = []
-    
+    const userContext: string[] = [];
+
     userContext.push(`The user is using ${os.platform()} with version ${os.release()}`);
 
     // Assuming 'node -v' is executed synchronously
