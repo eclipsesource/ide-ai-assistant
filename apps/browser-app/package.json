@@ -13,7 +13,6 @@
     }
   },
   "dependencies": {
-    "@extension/ide-ext": "1.0.0",
     "@theia/plugin": "1.43.0",
     "@theia/plugin-ext": "1.43.0",
     "@theia/terminal": "1.43.0",

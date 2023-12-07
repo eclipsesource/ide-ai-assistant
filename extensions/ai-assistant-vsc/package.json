@@ -74,11 +74,11 @@
     "package": "vsce package --yarn"
   },
   "dependencies": {
-    "@extension/api": "1.0.0",
     "@types/vscode": "^1.84.0",
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
+    "@types/node": "18.x",
     "vsce-yarn-patch": "^1.66.2",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
