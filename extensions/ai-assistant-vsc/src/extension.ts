@@ -131,7 +131,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 						<button id="send">Send</button>
 					</div>
 				</div>
-				<button id="get-error">Trigger an error</button>
+				<!-- <button id="get-error">Trigger an error</button> -->
 			
 				<link href="${chatStyleUri}" rel="stylesheet" />
 				<script nonce=${nonce}>

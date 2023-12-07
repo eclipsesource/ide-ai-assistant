@@ -31,7 +31,7 @@ class ChatApp {
             this.handleSendMessage();
             this.adjustTextareaHeight();
         });
-        document.getElementById('get-error').addEventListener('click', () => {
+        document.getElementById('get-error')?.addEventListener('click', () => {
             this.getError();
         });
         this.input.addEventListener('input', () => this.adjustTextareaHeight());
