@@ -1,3 +1,3 @@
-The user is using linux with version Linux-6.2.0-37-generic-x86_64-with-glibc2.35
-The user is using node version v18.17.1
+The user is using Windows 11 version 23H2
+The user is using node version manager and the current node version is v18.17.0
 The user is running VSCode version 1.84.2

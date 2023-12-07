@@ -1,19 +1,37 @@
 import * as vscode from 'vscode';
-import * as theia from '@theia/plugin';
+import { AIAssistantProvider } from './extension';
+
+const theia = vscode as any;
 
 
-const THEIA_CUSTOM_COMMAND = 'execution.messageCommand';
+const THEIA_CUSTOM_COMMAND = 'ai-assistant-vsc.registerObserver';
 
-class MyTerminalObserver implements theia.TerminalObserver {
-    outputMatcherRegex = '((..)/(..)/(....) .*)';
-    nrOfLinesToMatch = 20;
+class MyTerminalObserver {
+
+    constructor(provider: AIAssistantProvider) {
+        this.provider = provider;
+    }
+    private provider: AIAssistantProvider;
+    private lastError: string = '';
+
+    // TODO Regex is set to specifically work during the demo, needs to be updated later
+    outputMatcherRegex = "error ai.*";
+    nrOfLinesToMatch = 40;
     matchOccurred(groups: string[]): void {
-        console.log(`starts with a date: ${groups[4]}-${groups[3]}-${groups[2]}`);
+        if (groups[0] === this.lastError) {
+            return;
+        }
+        this.lastError = groups[0];
+        this.provider.SendErrorNotification({
+            command: 'handle-error',
+            linkData: 'The assistant has detected an error in your execution. Do you want to ask the assistant for the command to solve it?',
+            errorMsg: groups[0]
+        });
     }
 
 }
 
-export const activateTheia = async (appName: string, context: vscode.ExtensionContext) => {
+export const activateTheia = async (appName: string, context: vscode.ExtensionContext, provider: AIAssistantProvider) => {
     if (vscode.env.appName === appName) {
 
         let terminalObserver: vscode.Disposable;
@@ -25,8 +43,7 @@ export const activateTheia = async (appName: string, context: vscode.ExtensionCo
 
             // The code you place here will be executed every time your command is executed
             // Display a message box to the user
-            vscode.window.showInformationMessage('Registering terminal observer');
-            terminalObserver = theia.window.registerTerminalObserver(new MyTerminalObserver());
+            terminalObserver = theia.window.registerTerminalObserver(new MyTerminalObserver(provider));
         });
 
         context.subscriptions.push(disposable);
@@ -39,7 +56,7 @@ export const activateTheia = async (appName: string, context: vscode.ExtensionCo
             terminalObserver.dispose();
         });
 
-        // context.subscriptions.push(disposable);
+        context.subscriptions.push(disposable);
 
         // Execute Theia custom command
         const commands = await vscode.commands.getCommands();

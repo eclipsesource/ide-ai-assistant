@@ -14,7 +14,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./lib/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -44,11 +46,11 @@
       {
         "command": "ai-assistant-vsc.registerObserver",
         "title": "Register Observer VSCODE Extension"
-    },
-    {
+      },
+      {
         "command": "ai-assistant-vsc.unregisterObserver",
         "title": "Unregister Observer VSCODE Extension"
-    }
+      }
     ],
     "viewsWelcome": [
       {

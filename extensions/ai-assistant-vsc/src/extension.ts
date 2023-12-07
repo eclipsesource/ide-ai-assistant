@@ -8,23 +8,31 @@ interface ErrorObject {
 }
 import { activateTheia } from './theia';
 
-const THEIA_APP_NAME = 'Eclipse Theia';
+const THEIA_APP_NAME = 'Theia Browser Example';
 
 // This method is called when your extension is activated
 export const activate = async (context: vscode.ExtensionContext) => {
 
 	const provider = new AIAssistantProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
-	
+
 	if (vscode.env.appName === THEIA_APP_NAME) {
-		await activateTheia(THEIA_APP_NAME, context);
+		await activateTheia(THEIA_APP_NAME, context, provider);
 	}
 };
 
 // This method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate(context: vscode.ExtensionContext) {
+	context.subscriptions.forEach((disposable) => {
+		try {
+			disposable.dispose();
+		} catch (error) {
+			console.error(error);
+		}
+	});
+}
 
-class AIAssistantProvider implements vscode.WebviewViewProvider {
+export class AIAssistantProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'ai-assistant-vsc.chatboxView';
 	private _view?: vscode.WebviewView;
 	private _context: vscode.ExtensionContext;
@@ -33,12 +41,17 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 		this._context = context;
 	}
 
+	public async SendErrorNotification(message: ErrorObject) {
+		showErrorNotification(message, this._view!);
+	}
+
+
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		_context: vscode.WebviewViewResolveContext,
 		_token: vscode.CancellationToken,
 	) {
-		// this._view = webviewView;
+		this._view = webviewView;
 		webviewView.webview.options = {
 			// Allow scripts in the webview
 			enableScripts: true,
@@ -47,8 +60,8 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 			]
 		};
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-	
-		let disposableMessageListener = webviewView.webview.onDidReceiveMessage(
+
+		webviewView.webview.onDidReceiveMessage(
 			message => {
 				switch (message.command) {
 					case 'message':
@@ -90,11 +103,11 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 
 		let userContextContent: any;
 		let projectContextContent: any;
-		
+
 		try {
 			const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').fsPath;
 			userContextContent = fs.readFileSync(userContextPath, 'utf8');
-			
+
 		} catch (err) {
 			console.error(`Unable to read user context file: ${err}`);
 		}
@@ -106,7 +119,7 @@ class AIAssistantProvider implements vscode.WebviewViewProvider {
 			console.error(`Unable to read project context file: ${err}`);
 		}
 
-		return `
+		return /*html*/`
 			<html>
 			<body>
 				<div id="chat-container" class="vscode-dark">
@@ -141,37 +154,40 @@ function getNonce() {
 	return text;
 }
 
+// TODO: will be implemented after the demo
+
 // Check if a terminal exists
-function ensureTerminalExists(): boolean {
-	if ((<any>vscode.window).terminals.length === 0) {
-		vscode.window.showErrorMessage('No active terminals');
-		return false;
-	}
-	return true;
-}
+// function ensureTerminalExists(): boolean {
+// 	if ((<any>vscode.window).terminals.length === 0) {
+// 		vscode.window.showErrorMessage('No active terminals');
+// 		return false;
+// 	}
+// 	return true;
+// }
 
 // Function to select an active terminal
 function getActiveTerminal(): vscode.Terminal | undefined {
 	return vscode.window.activeTerminal;
 }
 
+// TODO: will be implemented after the demo
 // Picker to select terminals when there are multiple
-function selectTerminal(): Thenable<vscode.Terminal | undefined> {
+// function selectTerminal(): Thenable<vscode.Terminal | undefined> {
 
-	interface TerminalQuickPickItem extends vscode.QuickPickItem {
-		terminal: vscode.Terminal;
-	}
-	const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
-	const items: TerminalQuickPickItem[] = terminals.map(t => {
-		return {
-			label: `name: ${t.name}`,
-			terminal: t
-		};
-	});
-	return vscode.window.showQuickPick(items).then(item => {
-		return item ? item.terminal : undefined;
-	});
-}
+// 	interface TerminalQuickPickItem extends vscode.QuickPickItem {
+// 		terminal: vscode.Terminal;
+// 	}
+// 	const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
+// 	const items: TerminalQuickPickItem[] = terminals.map(t => {
+// 		return {
+// 			label: `name: ${t.name}`,
+// 			terminal: t
+// 		};
+// 	});
+// 	return vscode.window.showQuickPick(items).then(item => {
+// 		return item ? item.terminal : undefined;
+// 	});
+// }
 
 function showErrorNotification(message: ErrorObject, webviewView: vscode.WebviewView) {
 	vscode.window.showInformationMessage(message.linkData, 'Yes', 'No').then(action => {

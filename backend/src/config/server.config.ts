@@ -8,7 +8,8 @@ export const PORT = process.env.PORT || 3001;
 export async function serverConfig(app: Application) {
     app.use(express.json());
     if (process.env.NODE_ENV !== "test") {
-    app.use(morganMiddleware);
+        app.use(morganMiddleware);
+    }
     const cors = require('cors');
     app.use(cors({
         origin: '*'
