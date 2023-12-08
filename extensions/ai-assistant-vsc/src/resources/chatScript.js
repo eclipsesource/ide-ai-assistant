@@ -1,13 +1,10 @@
-ENDPOINT = 'http://localhost:3001/services/aiAssistantBackend';
-
 class ChatApp {
 
     constructor() {
         this.allMessages = [];
-        this.vscode = acquireVsCodeApi();
         this.input = document.getElementById('input');
         this.messagesContainer = document.getElementById('chat-messages');
-        this.endpoint = ENDPOINT;
+        this.endpoint = BACKEND_URL;
         this.displayLoading = false;
 
         // Setup initial message
@@ -99,7 +96,7 @@ class ChatApp {
         // Display loading message with delay
         this.displayLoading = true;
         setTimeout(() => {
-            this.vscode.postMessage({
+            vscode.postMessage({
                 command: 'loading',
             });
         }, 200);
@@ -136,7 +133,7 @@ class ChatApp {
 
         const command = debug ? 'debug-command' : 'message';
         // Display the answer in the chat window
-        this.vscode.postMessage({
+        vscode.postMessage({
             command: command,
             text: APIResponse
         });
@@ -163,12 +160,11 @@ class ChatApp {
     getError() {
         let linkData = 'The assistant has detected an error in your execution. Do you want to ask the assistant for the command to solve it?';
         // Send a link to the terminal 
-        this.vscode.postMessage({
+        vscode.postMessage({
             command: 'handle-error',
             linkData: linkData,
             errorMsg: 'I have an error in my terminal "missing glob package". Give me the terminal command to solve this.'
         });
     }
-}
 
-const myChatApp = new ChatApp();
+}
