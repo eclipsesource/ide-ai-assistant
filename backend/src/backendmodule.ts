@@ -1,4 +1,5 @@
-import { Container, ContainerModule } from '@theia/core/shared/inversify';
+import { Container, ContainerModule } from 'inversify';
+// import { Container, ContainerModule} from 'inversify-express-utils/node_modules/inversify/';
 import { Logger } from './config';
 import { AIAssistantController } from './controllers/AIAssistant.Controller';
 import { AIAssistantBackendService } from './protocol';

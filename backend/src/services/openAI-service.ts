@@ -6,7 +6,7 @@
  * @requires ../config
  * @requires ../protocol
  */
-import { injectable } from '@theia/core/shared/inversify';
+import { injectable } from 'inversify';
 import { OpenAI } from "openai";
 import { BadRequestException, BaseException } from '../config';
 import { AIAssistantBackendService, Message, MessageRequest, MessageResponse } from '../protocol';
@@ -58,15 +58,22 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
      * @param {MessageRequest} request - The request object containing userContext and projectContext.
      */
     private generateContextMessage(request: MessageRequest) {
-        var contextMessage = "";
+        var InstructionMessage = `You are an AI assistant in an IDE. 
+        You are helping a developer with a project.
+        You are an expert in the project and should be able to answer any question about it precisly and concisely.
+        If the user gives you an terminal error, you should give them a command to fix it.
+        This command should be given in a code snippet.
+        If multiple commands are needed you should give them in one code snippet on one line, and separate each command with a space then a semicolon.
+        If you decide to give commands you should start the message by saying to the user that you have pasted commands in the terminal, and the user should review and execute them.
+        `;
 
         if (request.userContext) {
-            contextMessage = "This is my user context: " + request.userContext + "\n";
+            InstructionMessage += "This is the user context: " + request.userContext + "\n";
         }
         if (request.projectContext) {
-            contextMessage = contextMessage + "This is my project context: " + request.projectContext;
+            InstructionMessage += "This is the project context: " + request.projectContext;
         }
 
-        request.messages.unshift({ role: "user", content: contextMessage });
+        request.messages.unshift({ role: "user", content: InstructionMessage });
     }
 }

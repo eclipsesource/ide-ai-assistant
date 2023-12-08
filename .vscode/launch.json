@@ -17,15 +17,15 @@
             "type": "extensionHost"
         },
         {
+            "name": "IDE (Backend)",
             "type": "node",
             "request": "launch",
-            "name": "Start Browser Backend",
             "program": "${workspaceRoot}/apps/browser-app/src-gen/backend/main.js",
             "args": [
-                "--loglevel=debug",
-                "--port=3000",
+                "--log-level=debug",
+                "--hostname=0.0.0.0",
                 "--no-cluster",
-                "--plugins=local-dir:${workspaceRoot}/plugins"
+                "--plugins=local-dir:${workspaceFolder}/plugins/"
             ],
             "env": {
                 "NODE_ENV": "development",
@@ -33,14 +33,25 @@
             },
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/node_modules/@theia/*/lib/**/*.js",
-                "${workspaceRoot}/extensions/*/lib/**/*.js",
-                "${workspaceRoot}/extensions/*/out/**/*.js",
-                "${workspaceRoot}/apps/*/src-gen/**/*.js"
+                "${workspaceFolder}/node_modules/@theia/*/lib/**/*.js",
+                "${workspaceFolder}/ide/lib/**/*.js",
+                "${workspaceFolder}/ide/src-gen/**/*.js",
+                "${workspaceFolder}/ide-ext/lib/**/*.js"
             ],
             "smartStep": true,
             "internalConsoleOptions": "openOnSessionStart",
             "outputCapture": "std"
+        },
+        {
+            "name": "IDE (Frontend)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/apps/browser-app/src-gen/frontend",
+            "sourceMapPathOverrides": {
+                "webpack:////src/*": "${workspaceFolder}/*",
+                "webpack:////*": "/*"
+            }
         },
         {
             "type": "node",
@@ -71,6 +82,16 @@
             "smartStep": true,
             "internalConsoleOptions": "openOnSessionStart",
             "outputCapture": "std"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Theia IDE",
+            "configurations": [
+                "IDE (Backend)",
+                "IDE (Frontend)"
+            ],
+            "stopAll": true
         }
     ]
 }

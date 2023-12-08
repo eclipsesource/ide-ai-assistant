@@ -1,6 +1,7 @@
 node_modules
 .browser_modules
 lib
+out
 *.log
 out
 src-gen
@@ -9,3 +10,5 @@ secrets.env
 plugins/
 __snapshots__
 *webpack*
+*.tsbuildinfo
+*.vsix

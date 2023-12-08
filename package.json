@@ -7,25 +7,28 @@
   "scripts": {
     "build:browser": "yarn --cwd apps/browser-app bundle",
     "build:electron": "yarn --cwd apps/electron-app bundle",
-    "prepare": "lerna run prepare",
     "postinstall": "theia check:theia-version",
-    "start:browser": "yarn --cwd apps/browser-app start --plugins=local-dir:../../plugins",
-    "start:electron": "yarn --cwd apps/electron-app start --plugins=local-dir:../../plugins",
-    "start": "lerna run start --parallel --scope backend --scope browser-app",
+    "start": "lerna run start --parallel --scope={browser-app,backend}",
+    "start:browser": "yarn --cwd apps/browser-app start",
+    "start:electron": "yarn --cwd apps/electron-app start",
+    "start:backend": "yarn --cwd backend start",
     "watch": "lerna run --parallel watch",
-    "test:backend": "yarn --cwd backend test",
-    "test:theia": "yarn --cwd extensions/ai-assistant-theia test",
-    "test:vsc": "yarn --cwd extensions/ai-assistant-vsc test",
+    "test": "lerna run test",
     "lint": "eslint . --ext .ts",
-    "clean": "lerna run clean && lerna clean --yes && git clean -f -x ./node_modules"
+    "prepare": "yarn build && yarn package",
+    "clean": "lerna run clean && lerna clean --yes && git clean -f -x ./node_modules",
+    "build": "lerna run build",
+    "package": "lerna run package"
   },
   "devDependencies": {
-    "lerna": "2.4.0"
+    "lerna": "8.0.0"
+  },
+  "resolutions": {
+    "@types/react": "^18.0.15"
   },
   "workspaces": [
     "extensions/*",
-    "apps/browser-app",
-    "apps/electron-app",
+    "apps/*",
     "backend"
   ]
 }

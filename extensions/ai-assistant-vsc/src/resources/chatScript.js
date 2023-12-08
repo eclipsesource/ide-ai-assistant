@@ -18,7 +18,7 @@ class ChatApp {
         this.setupEventListeners();
 
         // Get contexts
-        this.contexts = {user: userContext, project: projectContext};
+        this.contexts = { user: userContext, project: projectContext };
     }
 
     adjustTextareaHeight() {
@@ -31,14 +31,14 @@ class ChatApp {
             this.handleSendMessage();
             this.adjustTextareaHeight();
         });
-        document.getElementById('get-error').addEventListener('click', () => {
+        document.getElementById('get-error')?.addEventListener('click', () => {
             this.getError();
         });
         this.input.addEventListener('input', () => this.adjustTextareaHeight());
         window.addEventListener('message', (event) => this.handleReceivedMessage(event));
         window.addEventListener('resize', () => this.adjustTextareaHeight());
         // Override default Enter behavior
-        this.input.addEventListener('keydown', function(event) {
+        this.input.addEventListener('keydown', function (event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
                 document.getElementById('send').click();
@@ -106,13 +106,13 @@ class ChatApp {
         this.getAPIResponse();
     }
 
-    async getAPIResponse(debug = true) {
+    async getAPIResponse(debug = false) {
         let APIResponse;
         const request = {
             messages: this.allMessages,
             projectContext: this.contexts.project,
             userContext: this.contexts.user
-        }
+        };
 
         await fetch(this.endpoint, {
             method: "POST",
@@ -134,7 +134,7 @@ class ChatApp {
                 APIResponse = `An error occured.\n ${error}`;
             });
 
-        const command = debug ? 'debug-command' : 'message'; 
+        const command = debug ? 'debug-command' : 'message';
         // Display the answer in the chat window
         this.vscode.postMessage({
             command: command,

@@ -1,16 +1,23 @@
 {
   "name": "ai-assistant-vsc",
   "displayName": "ai-assistant-vsc",
-  "description": "",
-  "version": "0.0.1",
+  "description": "AI Assistant for VS Code and the Theia IDE",
+  "version": "1.0.0",
+  "preview": true,
+  "publisher": "EclipseSource",
+  "author": "EclipseSource",
+  "license": "MIT",
+  "repository": "https://github.com/eclipsesource/ide-ai-assistant",
   "engines": {
-    "vscode": "^1.84.0"
+    "vscode": "^1.50.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onStartupFinished"],
-  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./lib/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -29,7 +36,29 @@
           "name": "AI Assistant"
         }
       ]
-    }
+    },
+    "commands": [
+      {
+        "command": "ai-assistant-vsc.openAssistant",
+        "category": "AI Assistant",
+        "title": "Open Assistant"
+      },
+      {
+        "command": "ai-assistant-vsc.registerObserver",
+        "title": "Register Observer VSCODE Extension"
+      },
+      {
+        "command": "ai-assistant-vsc.unregisterObserver",
+        "title": "Unregister Observer VSCODE Extension"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "extension.message",
+        "contents": "[Show message](command:showMessage)"
+      }
+    ],
+    "menus": {}
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
@@ -37,14 +66,20 @@
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "clean": "rimraf out",
-    "prepare": "yarn run clean && yarn run compile && yarn symlink",
-    "symlink": "symlink-dir . ../../plugins/ai-assistant-vsc"
+    "test": "node ./lib/test/runTest.js",
+    "clean": "rimraf ../../plugins/ai-assistant-vsc && git clean -f -x ./node_modules ./lib ./tsconfig.tsbuildinfo",
+    "symlink": "symlink-dir . ../../plugins/ai-assistant-vsc",
+    "prepare": "yarn build && yarn package",
+    "build": "tsc && yarn symlink",
+    "package": "vsce package --yarn"
+  },
+  "dependencies": {
+    "@types/vscode": "^1.84.0",
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "@types/vscode": "^1.84.0",
     "@types/node": "18.x",
+    "vsce-yarn-patch": "^1.66.2",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
     "eslint": "^8.52.0",
