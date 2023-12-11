@@ -95,6 +95,9 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 					case 'openExternal':
 						vscode.env.openExternal(vscode.Uri.parse(message.url));
 						return;
+					case 'test':
+						vscode.window.showInformationMessage(message.text);
+						return;
 				}
 			},
 			undefined,

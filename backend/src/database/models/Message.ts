@@ -1,20 +1,32 @@
-import mongoose from 'mongoose';
-import Discussion from './Discussion';
+import { Document, Schema, Types, model } from 'mongoose';
+import { Discussion } from './Discussion';
 
-const MessageSchema = new mongoose.Schema({
+// Define the TypeScript type for Message document
+interface MessageType extends Document {
+    messageId: number;
+    discussionId: Types.ObjectId;
+    role: 'assistant' | 'user';
+    content: string;
+    date: Date;
+    rating?: number;
+    feedback?: string;
+}
+
+const MessageSchema = new Schema({
     messageId: {
         type: Number,
         required: true,
         unique: true,
     },
     discussionId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         required: true,
         ref: 'Discussion',
     },
     role: {
         type: String,
         required: true,
+        enum: ['assistant', 'user'],
     },
     content: {
         type: String,
@@ -26,24 +38,20 @@ const MessageSchema = new mongoose.Schema({
     },
     rating: {
         type: Number,
-        
     },
     feedback: {
         type: String,
     },
 });
 
-MessageSchema.pre('save', async function(next) {
+MessageSchema.pre('save', async function (next) {
     const discussion = await Discussion.findById(this.discussionId);
     if (!discussion) {
         throw new Error('Discussion not found');
     }
-    if (this.role !== "assistant" && this.role !== "user") {
-        throw new Error('The user role should be either "user" or "assistant"');
-    }
     next();
 });
 
-const Message = mongoose.model('Message', MessageSchema);
+const Message = model<MessageType>('Message', MessageSchema);
 
-export default Message;
+export { Message, MessageType };

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Logger } from "../config";
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Discussion, User, Message } from '../models';
+import { Discussion, User, Message } from './models';
 
 async function connectDB(mongoURI: string) {
     const logger = new Logger();
@@ -20,7 +20,8 @@ export default async function instantiateDB() {
     const mongoUri = mongoServer.getUri();
     await connectDB(mongoUri);
 
-    samplePopulateDB();
+    // samplePopulateDB();
+    samplePopulateDB_2();
 };
 
 
@@ -47,5 +48,16 @@ export async function samplePopulateDB() {
     });
     message1.save();
     
+    console.log('Sample data populated');
+};
+
+async function samplePopulateDB_2() {
+    const user1 = new User({
+        userId: 1,
+        email: 'mathis.girault38@gmail.com',
+        isAdmin: true,
+    });
+    await user1.save();
+
     console.log('Sample data populated');
 };

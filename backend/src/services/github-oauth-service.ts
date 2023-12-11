@@ -1,8 +1,11 @@
+import { UserService } from "../database/services/UserService";
+
 export default class GithubOAuthService {
   clientId = 'f6843855679852363fae';
   clientSecret = process.env.CLIENT_SECRET;
+  userService = new UserService();
 
-  async getUserToken(user_code: string): Promise<string> {
+  async getAccessToken(user_code: string): Promise<string> {
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {

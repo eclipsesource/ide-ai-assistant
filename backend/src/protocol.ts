@@ -29,6 +29,12 @@ export class MessageRequest {
     @IsString()
     @IsOptional()
     userContext?: string;
+
+    @IsString()
+    access_token: string;
+
+    @IsString()
+    projectName: string;
 }
 
 export type MessageResponse = {

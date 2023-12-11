@@ -1,10 +1,15 @@
-class ChatApp {
+const AI_BACKEND_URL = 'http://localhost:3001/services/aiAssistantBackend';
 
-    constructor() {
+class ChatApp {
+    projectName = 'sampleProjectName';
+
+    constructor(access_token) {
+        this.access_token = access_token;
+
         this.allMessages = [];
         this.input = document.getElementById('input');
         this.messagesContainer = document.getElementById('chat-messages');
-        this.endpoint = BACKEND_URL;
+        this.endpoint = AI_BACKEND_URL;
         this.displayLoading = false;
 
         // Setup initial message
@@ -100,38 +105,44 @@ class ChatApp {
                 command: 'loading',
             });
         }, 200);
-        this.getAPIResponse();
+        await this.getAPIResponse();
     }
 
     async getAPIResponse(debug = false) {
-        let APIResponse;
+
         const request = {
             messages: this.allMessages,
             projectContext: this.contexts.project,
-            userContext: this.contexts.user
+            userContext: this.contexts.user,
+            access_token: this.access_token,
+            projectName: this.projectName
         };
 
-        await fetch(this.endpoint, {
-            method: "POST",
-            body: JSON.stringify(request),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-            }
-        })
-            .then(response => response.json())
-            .then(json => {
-                // We need to check the answer is valid
-                if (!json.content || !json.content.content || json.content.role !== "assistant") {
-                    throw new Error("An error occured while communicating with the backend.");
-                }
-                APIResponse = json.content.content;
-            })
-            .catch(error => {
-                console.error(error);
-                APIResponse = `An error occured.\n ${error}`;
-            });
-
         const command = debug ? 'debug-command' : 'message';
+        let APIResponse;
+
+        try {
+
+            const response = await fetch(this.endpoint, {
+                method: "POST",
+                body: JSON.stringify(request),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                }
+            });
+            const json = await response.json()
+
+            // Check if the response is valid
+            if (!json.content || !json.content.content || json.content.role !== "assistant") {
+                throw new Error("An error occured while communicating with the backend.");
+            }
+            
+            APIResponse = json.content.content;
+
+        } catch (error) {
+            APIResponse = `An error occured.\n ${error}`;
+        }
+    
         // Display the answer in the chat window
         vscode.postMessage({
             command: command,

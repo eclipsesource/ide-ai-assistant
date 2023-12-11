@@ -1,4 +1,4 @@
-const BACKEND_URL = 'http://localhost:3001/services/aiAssistantBackend';
+const GITHUB_BACKEND_URL = 'http://localhost:3001/github-oauth';
 const vscode = acquireVsCodeApi();
 
 class GitHubOAuth {
@@ -48,7 +48,7 @@ class GitHubOAuth {
             return;
         }
         this.infoDiv.textContent = this.oauthCode;
-        await fetch(`${BACKEND_URL}/github-oauth`, {
+        await fetch(`${GITHUB_BACKEND_URL}`, {
             method: "POST",
             body: JSON.stringify({ code: this.oauthCode }),
             headers: {
@@ -61,22 +61,22 @@ class GitHubOAuth {
                 if (!data.success) {
                     throw new Error("There was an error connecting, please retry.");
                 }
-                this.handleConnection();
+                this.handleConnection(data.access_token);
             })
             .catch(error => {
                 this.infoDiv.textContent = "There was an error connecting with the backend, it might not be running." + error;
             });
     }
 
-    handleConnection() {
-        if (this.oauthCode) {
+    handleConnection(access_token) {
+        if (access_token) {
             document.getElementById("login-container").style.display = 'none';
             document.getElementById("chat-container").style.display = 'flex';
 
             if (document.getElementById("get-error")) {
                 document.getElementById("get-error").style.display = 'none';
             }
-            const _myChatApp = new ChatApp();
+            const _myChatApp = new ChatApp(access_token);
         }
     }
 }
