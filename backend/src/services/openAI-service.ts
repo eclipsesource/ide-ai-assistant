@@ -12,12 +12,12 @@ import { BadRequestException, BaseException } from '../config';
 import { AIAssistantBackendService, Message, MessageRequest, MessageResponse } from '../protocol';
 
 
-const openai = new OpenAI({
-    apiKey: process.env.API_KEY ? process.env.API_KEY : "",
-});
-
 @injectable()
 export class OpenAIAssistantImpl implements AIAssistantBackendService {
+
+    private readonly openai = new OpenAI({
+        apiKey: process.env.API_KEY ? process.env.API_KEY : "",
+    });
 
     async getAnswer(request: MessageRequest): Promise<MessageResponse> {
         const [isValidRequest, errorMessage] = this.validRequest(request);
@@ -41,7 +41,7 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
     }
 
     private async getAnswerFromOpenAI(messages: Message[]): Promise<Message> {
-        const chatCompletion = await openai.chat.completions.create({
+        const chatCompletion = await this.openai.chat.completions.create({
             messages: messages,
             model: process.env.OPENAI_MODEL ? process.env.OPENAI_MODEL : "gpt-3.5-turbo",
         }).catch((e) => {
