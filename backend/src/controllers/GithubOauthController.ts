@@ -21,12 +21,12 @@ export class GithubOauthController {
 
       // Get the user
       const access_token = await this.githubOAuthService.getAccessToken(code);
-      const user_email = await this.githubOAuthService.getUserEmail(access_token);
+      const user_login = await this.githubOAuthService.getUserLogin(access_token);
 
-      let user = await this.userService.getUserByEmail(user_email);
+      let user = await this.userService.getUserByLogin(user_login);
 
       if (user == null) {
-        await this.userService.createUserByEmail(user_email);
+        await this.userService.createUserByLogin(user_login);
       }
 
       return res.status(200).json({ success: true, access_token: access_token });

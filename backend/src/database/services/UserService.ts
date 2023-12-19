@@ -13,12 +13,12 @@ export class UserService {
         return savedUser;
     }
 
-    public async createUserByEmail(email: string): Promise<UserType> {
-        if (await this.getUserByEmail(email) != null) {
+    public async createUserByLogin(login: string): Promise<UserType> {
+        if (await this.getUserByLogin(login) != null) {
             throw new Error('User already exists');
         }
         const userId = await this.getNextUserId();
-        const newUser = new User({ userId, email });
+        const newUser = new User({ userId, login });
         const savedUser = await newUser.save() as UserType;
         return savedUser;
     }
@@ -28,8 +28,8 @@ export class UserService {
         return user;
     }
 
-    public async getUserByEmail(email: string): Promise<UserType | null> {
-        const user = await User.findOne({ email });
+    public async getUserByLogin(login: string): Promise<UserType | null> {
+        const user = await User.findOne({ login });
         return user;
     }
 

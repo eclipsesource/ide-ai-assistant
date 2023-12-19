@@ -53,10 +53,10 @@ export class AIAssistantController {
 
   async getUser(req: Request): Promise<UserType> {
       const { access_token } = req.body;
-      const user_email = await this.githubOAuthService.getUserEmail(access_token);
-      const user = await this.userService.getUserByEmail(user_email);
+      const user_login = await this.githubOAuthService.getUserLogin(access_token);
+      const user = await this.userService.getUserByLogin(user_login);
       if (user == null) {
-          throw new Error(`User with email ${user_email} does not exist`);
+          throw new Error(`User with login ${user_login} does not exist`);
       }
 
       return user;

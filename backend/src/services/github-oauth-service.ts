@@ -1,4 +1,5 @@
 import { UserService } from "../database/services/UserService";
+import { Octokit } from "@octokit/rest";
 
 export default class GithubOAuthService {
   clientId = 'f6843855679852363fae';
@@ -27,19 +28,19 @@ export default class GithubOAuthService {
     throw new Error('No access token received');
   }
 
-  async getUserEmail(accessToken: string): Promise<string> {
-    const response = await fetch('https://api.github.com/user/emails', {
-      headers: {
-        'Authorization': `token ${accessToken}`,
-      },
+  async getUserLogin(accessToken: string): Promise<string> {
+
+    const octokit = new Octokit({
+      auth: accessToken,
     });
 
-    const data = await response.json();
-    if (data) {
-      return data[0].email;
+    const { data: user } = await octokit.rest.users.getAuthenticated();
+
+    if (user && user.login) {
+      return user.login;
     }
 
-    throw new Error('No email received');
+    throw new Error('No github login is associated with given access token');
   }
 
 }

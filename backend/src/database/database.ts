@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Logger } from "../config";
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Discussion, User, Message } from './models';
+import { User } from './models';
 
 async function connectDB(mongoURI: string) {
     const logger = new Logger();
@@ -20,41 +20,13 @@ export default async function instantiateDB() {
     const mongoUri = mongoServer.getUri();
     await connectDB(mongoUri);
 
-    // samplePopulateDB();
-    samplePopulateDB_2();
+    initializeDb();
 };
 
-
-export async function samplePopulateDB() {
+async function initializeDb() {
     const user1 = new User({
         userId: 1,
-        email: 'test@test.db',
-        isAdmin: true,
-    });
-    await user1.save();
-
-    const discussion1 = new Discussion({
-        discussionId: 1,
-        userId: user1,
-        projectName: "theia",
-    });
-    await discussion1.save();
-
-    const message1 = new Message({
-        messageId: 1,
-        discussionId: discussion1,
-        role: 'user',
-        content: 'Hello',
-    });
-    message1.save();
-    
-    console.log('Sample data populated');
-};
-
-async function samplePopulateDB_2() {
-    const user1 = new User({
-        userId: 1,
-        email: 'mathis.girault38@gmail.com',
+        login: 'mathis-girault',
         isAdmin: true,
     });
     await user1.save();

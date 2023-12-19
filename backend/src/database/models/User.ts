@@ -2,7 +2,7 @@ import { Document, model, Schema } from 'mongoose';
 
 interface UserType extends Document {
     userId: number;
-    email: string;
+    login: string;
     userRole: string;
 }
 
@@ -12,7 +12,7 @@ const UserSchema = new Schema({
         required: true,
         unique: true,
     },
-    email: {
+    login: {
         type: String,
         required: true,
         unique: true,
