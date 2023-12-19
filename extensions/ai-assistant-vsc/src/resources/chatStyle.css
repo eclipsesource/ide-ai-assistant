@@ -103,3 +103,36 @@ html, body {
   content: '...';
   animation: loading 1s infinite;
 }
+
+/* LOGING STYLE */
+
+#chat-container {
+  display: none;
+}
+
+#get-error {
+  display: none;
+}
+
+#login {
+  height: 100%;
+  margin-left: 25px;
+  margin-right: 25px;
+  font-size: medium;
+}
+
+#login-button {
+  padding: 10px;
+  margin: 25px;
+  cursor: pointer;
+  background-color: rgb(43, 83, 156);
+  color: #fff;
+  font-size: medium;
+  border: none;
+  border-radius: 4px;
+}
+
+#login-info{
+  font-style: italic;
+  font-size: small;
+}

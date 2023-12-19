@@ -1,13 +1,15 @@
-ENDPOINT = 'http://localhost:3001/services/aiAssistantBackend';
+const AI_BACKEND_URL = 'http://localhost:3001/services/aiAssistantBackend';
 
 class ChatApp {
+    projectName = 'sampleProjectName';
 
-    constructor() {
+    constructor(access_token) {
+        this.access_token = access_token;
+
         this.allMessages = [];
-        this.vscode = acquireVsCodeApi();
         this.input = document.getElementById('input');
         this.messagesContainer = document.getElementById('chat-messages');
-        this.endpoint = ENDPOINT;
+        this.endpoint = AI_BACKEND_URL;
         this.displayLoading = false;
 
         // Setup initial message
@@ -99,44 +101,50 @@ class ChatApp {
         // Display loading message with delay
         this.displayLoading = true;
         setTimeout(() => {
-            this.vscode.postMessage({
+            vscode.postMessage({
                 command: 'loading',
             });
         }, 200);
-        this.getAPIResponse();
+        await this.getAPIResponse();
     }
 
     async getAPIResponse(debug = false) {
-        let APIResponse;
+
         const request = {
             messages: this.allMessages,
             projectContext: this.contexts.project,
-            userContext: this.contexts.user
+            userContext: this.contexts.user,
+            access_token: this.access_token,
+            projectName: this.projectName
         };
 
-        await fetch(this.endpoint, {
-            method: "POST",
-            body: JSON.stringify(request),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-            }
-        })
-            .then(response => response.json())
-            .then(json => {
-                // We need to check the answer is valid
-                if (!json.content || !json.content.content || json.content.role !== "assistant") {
-                    throw new Error("An error occured while communicating with the backend.");
-                }
-                APIResponse = json.content.content;
-            })
-            .catch(error => {
-                console.error(error);
-                APIResponse = `An error occured.\n ${error}`;
-            });
-
         const command = debug ? 'debug-command' : 'message';
+        let APIResponse;
+
+        try {
+
+            const response = await fetch(this.endpoint, {
+                method: "POST",
+                body: JSON.stringify(request),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                }
+            });
+            const json = await response.json()
+
+            // Check if the response is valid
+            if (!json.content || !json.content.content || json.content.role !== "assistant") {
+                throw new Error("An error occured while communicating with the backend.");
+            }
+            
+            APIResponse = json.content.content;
+
+        } catch (error) {
+            APIResponse = `An error occured.\n ${error}`;
+        }
+    
         // Display the answer in the chat window
-        this.vscode.postMessage({
+        vscode.postMessage({
             command: command,
             text: APIResponse
         });
@@ -163,12 +171,11 @@ class ChatApp {
     getError() {
         let linkData = 'The assistant has detected an error in your execution. Do you want to ask the assistant for the command to solve it?';
         // Send a link to the terminal 
-        this.vscode.postMessage({
+        vscode.postMessage({
             command: 'handle-error',
             linkData: linkData,
             errorMsg: 'I have an error in my terminal "missing glob package". Give me the terminal command to solve this.'
         });
     }
-}
 
-const myChatApp = new ChatApp();
+}

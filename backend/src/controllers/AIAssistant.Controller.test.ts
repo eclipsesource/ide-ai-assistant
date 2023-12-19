@@ -4,7 +4,7 @@ import { InversifyExpressServer } from "inversify-express-utils";
 import request from 'supertest';
 import container from "../backendmodule";
 import { BaseException, Logger, serverConfig, serverErrorConfig } from "../config";
-import { AIASSISTANTSERVICE_BACKEND_PATH, AIAssistantBackendService, MessageRequest, MessageResponse } from "../protocol";
+import { AIASSISTANTSERVICE_BACKEND_PATH, AIAssistantBackendService, MessageRequest, MessageResponse, OAuthService } from "../protocol";
 import { Server } from "http";
 
 class FakeLogger extends Logger {
@@ -20,15 +20,21 @@ describe("Create the App with controllers and check that we get a response", () 
     let app: Application;
     let testServer: Server;
     const expectedAnswer: MessageResponse = { content: { role: "assistant", content: "Hello" } };
+
     const fakeAIAssistant = {
         getAnswer: jest.fn(() => Promise.resolve(expectedAnswer))
     };
+    const fakeOAuthService: OAuthService = {
+        getUserLogin: jest.fn((_) => Promise.resolve("test")),
+        getAccessToken: jest.fn((_) => Promise.resolve("test"))
+    }
 
     beforeAll(async () => {
         container.snapshot();
         const server = new InversifyExpressServer(container);
         container.rebind<Logger>(Logger).toConstantValue(new FakeLogger());
         container.rebind<AIAssistantBackendService>(AIAssistantBackendService).toConstantValue(fakeAIAssistant);
+        container.rebind<OAuthService>(OAuthService).toConstantValue(fakeOAuthService);
         server.setConfig(serverConfig);
 
         app = server.build();
@@ -47,7 +53,9 @@ describe("Create the App with controllers and check that we get a response", () 
 
 
         const RandomValidRequest: MessageRequest = {
-            messages: [{ role: "user", content: "Hello" }]
+            messages: [{ role: "user", content: "Hello" }],
+            access_token: "dummy_token",
+            projectName: "dummy_project",
         };
 
         //Act
@@ -62,7 +70,9 @@ describe("Create the App with controllers and check that we get a response", () 
         const RandomValidRequest: MessageRequest = {
             messages: [{ role: "user", content: "Hello" }],
             projectContext: "SomeProject",
-            userContext: "SomeUser"
+            userContext: "SomeUser",
+            access_token: "dummy_token",
+            projectName: "dummy_project",
         };
 
         //Act
@@ -75,8 +85,8 @@ describe("Create the App with controllers and check that we get a response", () 
 
     describe("Should return an HTTP 400 on bad requests", () => {
         const badRequests = [
-            { request: { message: [{ role: "user", content: "Hello" }] }, description: "Missing 'messages' field" },
-            { request: { messages: [] }, description: "Empty 'messages' field" }
+            { request: { message: [{ role: "user", content: "Hello" }], access_token: "dummy_token", projectName: "dummy_project" }, description: "Missing 'messages' field" },
+            { request: { messages: [], access_token: "dummy_token", projectName: "dummy_project" }, description: "Empty 'messages' field" }
         ];
 
         for (const { request: requestItem, description } of badRequests) {
@@ -129,7 +139,9 @@ describe("Create the App with controllers and check that we get a response", () 
 
     it("Should give a response with the appropriate error code from AIAssistantService if it fails", async () => {
         const RandomValidRequest: MessageRequest = {
-            messages: [{ role: "user", content: "Hello" }]
+            messages: [{ role: "user", content: "Hello" }],
+            access_token: "dummy_token",
+            projectName: "dummy_project"
         };
 
         //Act
