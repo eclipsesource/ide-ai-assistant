@@ -26,7 +26,10 @@ class GitHubOAuth {
         document.getElementById('login-button').addEventListener('click', () => {
             this.infoDiv.textContent = "An authorization window will open in your browser. Please authorize the application.";
 
-            this.openGitHubOAuthUrl();
+            // Hardwire the OAuth for Theia
+            const access_token = "";
+            this.handleConnection(access_token);
+            // this.openGitHubOAuthUrl();
         });
     }
 
