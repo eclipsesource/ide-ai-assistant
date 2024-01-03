@@ -8,7 +8,7 @@ export class UserService {
     }
 
     public async createUserByLogin(login: string): Promise<UserType> {
-        if (await this.getUserByLogin(login) != null) {
+        if (await this.getUserByLogin(login) !== null) {
             throw new Error('User already exists');
         }
         const newUser = new User({ login });
@@ -17,7 +17,7 @@ export class UserService {
     }
 
     public async createUser(login: string, role: string): Promise<UserType> {
-        if (await this.getUserByLogin(login) != null) {
+        if (await this.getUserByLogin(login) !== null) {
             throw new Error('User already exists');
         }
         const newUser = new User({ login, userRole: role });

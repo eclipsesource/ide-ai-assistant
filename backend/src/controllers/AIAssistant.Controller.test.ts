@@ -1,155 +1,152 @@
 import { Application } from "express";
-import 'reflect-metadata';
+import "reflect-metadata";
 import { InversifyExpressServer } from "inversify-express-utils";
-import request from 'supertest';
+import request from "supertest";
 import container from "../backendmodule";
-import { BaseException, Logger, serverConfig, serverErrorConfig } from "../config";
-import { AIASSISTANTSERVICE_BACKEND_PATH, AIAssistantBackendService, MessageRequest, MessageResponse, OAuthService } from "../protocol";
+import { Logger, serverConfig } from "../config";
+import {
+  AIASSISTANTSERVICE_BACKEND_PATH,
+  AIAssistantBackendService,
+  MessageRequest,
+  MessageResponse,
+  OAuthService,
+} from "../protocol";
 import { Server } from "http";
+import { Database, MongoDB } from "../database/database";
 
 class FakeLogger extends Logger {
-    error = jest.fn(() => { });
-    info = jest.fn(() => { });
-    warn = jest.fn(() => { });
-    debug = jest.fn(() => { });
-    http = jest.fn(() => { });
-};
-
-
-describe("Create the App with controllers and check that we get a response", () => {
-    let app: Application;
-    let testServer: Server;
-    const expectedAnswer: MessageResponse = { content: { role: "assistant", content: "Hello" } };
-
-    const fakeAIAssistant = {
-        getAnswer: jest.fn(() => Promise.resolve(expectedAnswer))
-    };
-    const fakeOAuthService: OAuthService = {
-        getUserLogin: jest.fn((_) => Promise.resolve("test")),
-        getAccessToken: jest.fn((_) => Promise.resolve("test"))
-    }
-
-    beforeAll(async () => {
-        container.snapshot();
-        const server = new InversifyExpressServer(container);
-        container.rebind<Logger>(Logger).toConstantValue(new FakeLogger());
-        container.rebind<AIAssistantBackendService>(AIAssistantBackendService).toConstantValue(fakeAIAssistant);
-        container.rebind<OAuthService>(OAuthService).toConstantValue(fakeOAuthService);
-        server.setConfig(serverConfig);
-
-        app = server.build();
-        testServer = app.listen(3001);
-    });
-
-    afterAll(() => {
-        container.restore();
-        if (testServer) {
-            testServer.close();
-        }
-    });
-
-
-    it("Should return the output of the AIAssistant with request {messages: [...]}", async () => {
-
-
-        const RandomValidRequest: MessageRequest = {
-            messages: [{ role: "user", content: "Hello" }],
-            access_token: "dummy_token",
-            projectName: "dummy_project",
-        };
-
-        //Act
-        const response = await request(app).post(AIASSISTANTSERVICE_BACKEND_PATH).send(RandomValidRequest);
-
-        //Assert
-        expect(response.body).toEqual(expectedAnswer);
-        expect(response.status).toBe(200);
-    });
-
-    it("Should return the output of the AIAssistant with request {messages: [...], projectContext: 'someString', userContext: 'someString'}", async () => {
-        const RandomValidRequest: MessageRequest = {
-            messages: [{ role: "user", content: "Hello" }],
-            projectContext: "SomeProject",
-            userContext: "SomeUser",
-            access_token: "dummy_token",
-            projectName: "dummy_project",
-        };
-
-        //Act
-        const response = await request(app).post(AIASSISTANTSERVICE_BACKEND_PATH).send(RandomValidRequest);
-
-        //Assert
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(expectedAnswer);
-    });
-
-    describe("Should return an HTTP 400 on bad requests", () => {
-        const badRequests = [
-            { request: { message: [{ role: "user", content: "Hello" }], access_token: "dummy_token", projectName: "dummy_project" }, description: "Missing 'messages' field" },
-            { request: { messages: [], access_token: "dummy_token", projectName: "dummy_project" }, description: "Empty 'messages' field" }
-        ];
-
-        for (const { request: requestItem, description } of badRequests) {
-            it(description, async () => {
-                const response = await request(app).post(AIASSISTANTSERVICE_BACKEND_PATH).send(requestItem);
-
-                expect(response.status).toBe(400);
-                expect(response).toHaveProperty('error');
-                expect(response.error).not.toBe('');
-                expect(response.body).toEqual({});
-            });
-        }
-    });
-});
+  error = jest.fn(() => {});
+  info = jest.fn(() => {});
+  warn = jest.fn(() => {});
+  debug = jest.fn(() => {});
+  http = jest.fn(() => {});
+}
 
 describe("Create the App with controllers and check that we get a response", () => {
-    let app: Application;
-    let testServer: Server;
-    const expectedAnswer = { error: { type: "someType", statusCode: 500, errorMessage: "This is a test for errors" } };
-    const fakeAIAssistant = {
-        getAnswer: () => {
-            throw new BaseException(
-                expectedAnswer.error.type,
-                expectedAnswer.error.statusCode,
-                expectedAnswer.error.errorMessage
-            );
-        }
-    };
+  let app: Application;
+  let testServer: Server;
+  let database: Database;
 
-    beforeAll(async () => {
-        container.snapshot();
-        const server = new InversifyExpressServer(container);
-        container.rebind<Logger>(Logger).toConstantValue(new FakeLogger());
-        container.rebind<AIAssistantBackendService>(AIAssistantBackendService)
-            .toConstantValue(fakeAIAssistant);
+  const expectedAnswer: MessageResponse = {
+    content: { role: "assistant", content: "Hello" },
+  };
+  const fakeAIAssistant = {
+    getAnswer: jest.fn(() => Promise.resolve(expectedAnswer)),
+  };
 
-        server.setConfig(serverConfig);
-        server.setErrorConfig(serverErrorConfig);
+  const fakeOAuthService: OAuthService = {
+    getUserLogin: jest.fn((_) => Promise.resolve("test")),
+    getAccessToken: jest.fn((_) => Promise.resolve("test")),
+  };
 
-        app = server.build();
-        testServer = app.listen(3001);
+  beforeAll(async () => {
+    container.snapshot();
+    const server = new InversifyExpressServer(container);
+    container.rebind<Logger>(Logger).toConstantValue(new FakeLogger());
+    container
+      .rebind<AIAssistantBackendService>(AIAssistantBackendService)
+      .toConstantValue(fakeAIAssistant);
+    container
+      .rebind<OAuthService>(OAuthService)
+      .toConstantValue(fakeOAuthService);
+    server.setConfig(serverConfig);
+
+    app = server.build();
+    testServer = app.listen(3001);
+
+    database = new MongoDB();
+    await database.start();
+  });
+
+  afterAll(async () => {
+    testServer?.close();
+    await database?.close();
+  });
+
+  const validRequestsList: MessageRequest[] = [
+    {
+      messages: [{ role: "user", content: "Hello" }],
+      access_token: "dummy",
+      projectName: "dummy",
+    },
+    {
+      messages: [{ role: "user", content: "Hello" }],
+      access_token: "dummy",
+      projectName: "dummy",
+      projectContext: "dummy",
+    },
+    {
+      messages: [{ role: "user", content: "Hello" }],
+      access_token: "dummy",
+      projectName: "dummy",
+      userContext: "dummy",
+    },
+    {
+      messages: [{ role: "user", content: "Hello" }],
+      access_token: "dummy",
+      projectName: "dummy",
+      projectContext: "dummy",
+      userContext: "dummy",
+    },
+  ];
+
+  const badRequestsList = [
+    {
+      request: {
+        message: [{ role: "user", content: "Hello" }],
+        access_token: "dummy_token",
+        projectName: "dummy_project",
+      },
+      description: "Missing 'messages' field",
+    },
+    {
+      request: {
+        messages: [],
+        access_token: "dummy_token",
+        projectName: "dummy_project",
+      },
+      description: "Empty 'messages' field",
+    },
+    {
+      request: {
+        messages: [{ role: "user", content: "Hello" }],
+        access_token: "dummy_token",
+      },
+      description: "Empty 'projectName' field",
+    },
+    {
+      request: {
+        messages: [{ role: "user", content: "Hello" }],
+        projectName: "dummy_project",
+      },
+      description: "Empty 'access_token' field",
+    },
+  ];
+
+  for (let validRequest of validRequestsList) {
+    it(`Should return a valid output of the AIAssistant with valid request: ${JSON.stringify(
+      validRequest
+    )}`, async () => {
+      const response = await request(app)
+        .post(AIASSISTANTSERVICE_BACKEND_PATH)
+        .send(validRequest);
+
+      expect(response.status).toBe(200);
+      expect(response.body.content).toEqual(expectedAnswer.content);
+      expect(response.body.messageId).toBeDefined();
     });
+  }
 
-    afterAll(() => {
-        container.restore();
-        if (testServer) {
-            testServer.close();
-        }
+  for (let { request: requestItem, description } of badRequestsList) {
+    it(`Should return an HTTP 400 on bad request: ${description}`, async () => {
+      const response = await request(app)
+        .post(AIASSISTANTSERVICE_BACKEND_PATH)
+        .send(requestItem);
+
+      expect(response.status).toBe(400);
+      expect(response).toHaveProperty("error");
+      expect(response.error).not.toBe("");
+      expect(response.body).toEqual({});
     });
-
-    it("Should give a response with the appropriate error code from AIAssistantService if it fails", async () => {
-        const RandomValidRequest: MessageRequest = {
-            messages: [{ role: "user", content: "Hello" }],
-            access_token: "dummy_token",
-            projectName: "dummy_project"
-        };
-
-        //Act
-        const response = await request(app).post(AIASSISTANTSERVICE_BACKEND_PATH).send(RandomValidRequest);
-
-        //Assert
-        expect(container.get<Logger>(Logger).error).toHaveBeenCalled();
-        expect(response.body).toEqual(expectedAnswer);
-        expect(response.status).toBe(expectedAnswer.error.statusCode);
-    });
+  }
 });

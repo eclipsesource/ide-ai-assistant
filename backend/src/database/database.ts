@@ -9,6 +9,7 @@ export const Database = Symbol('Database');
 
 export interface Database {
   start(): Promise<void>;
+  close(): Promise<void>;
   connect(uri: string): Promise<void>;
 }
 
@@ -45,6 +46,15 @@ export class MongoDB implements Database {
     await this.initializeDb();
   }
 
+  async close() {
+    try {
+      await mongoose.connection.close();
+      this.logger.info('MongoDB connection closed');
+    } catch (error) {
+      this.logger.error(`Error closing MongoDB connection: ${error.message}`);
+    }
+  }
+
   async connect(mongoURI: string) {
     try {
       await mongoose.connect(mongoURI);
@@ -67,7 +77,7 @@ export class MongoDB implements Database {
     try {
       await Promise.all(this.users.map(async ({ login, role, projectLeads }) => {
 
-        const user = await userService.createUser(login, role)
+        const user = await userService.createUser(login, role);
 
         if (projectLeads) {
           // Instantiate projects leads

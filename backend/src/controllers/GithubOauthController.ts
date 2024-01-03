@@ -22,11 +22,8 @@ export class GithubOauthController {
       const access_token = await this.oAuthService.getAccessToken(code);
       const user_login = await this.oAuthService.getUserLogin(access_token);
 
-      let user = await this.databaseService.userService.getUserByLogin(user_login);
-
-      if (user == null) {
-        await this.databaseService.userService.createUserByLogin(user_login);
-      }
+      await this.databaseService.userService.getUserByLogin(user_login)
+        || await this.databaseService.userService.createUserByLogin(user_login);
 
       this.logger.info('GitHub OAuth process completed successfully');
       return res.status(200).json({ success: true, access_token: access_token });
