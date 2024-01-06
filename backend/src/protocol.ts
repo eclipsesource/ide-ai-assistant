@@ -29,6 +29,12 @@ export class MessageRequest {
     @IsString()
     @IsOptional()
     userContext?: string;
+
+    @IsString()
+    access_token: string;
+
+    @IsString()
+    projectName: string;
 }
 
 export type MessageResponse = {
@@ -37,8 +43,14 @@ export type MessageResponse = {
 
 //OpenAI Backend Service
 export const AIAssistantBackendService = Symbol('AIAssistantBackendService');
+export const OAuthService = Symbol('OAuthService');
 export const AIASSISTANTSERVICE_BACKEND_PATH = '/services/aiAssistantBackend';
 
 export interface AIAssistantBackendService {
     getAnswer(question: MessageRequest): Promise<MessageResponse>
+}
+
+export interface OAuthService {
+    getAccessToken(user_code: string): Promise<string>;
+    getUserLogin(accessToken: string): Promise<string>;
 }
