@@ -37,9 +37,9 @@ export class AIAssistantController {
       }
       
       // Add backend response message to database
-      this.databaseService.messageService.createMessage(discussion, "assistant", response.content.content, null, null);
+      const APIMessage = await this.databaseService.messageService.createMessage(discussion, "assistant", response.content.content, null, null);
       
-      return res.json(response);
+      return res.json({ ...response, messageId: APIMessage._id.toString() });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });

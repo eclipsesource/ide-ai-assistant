@@ -48,13 +48,13 @@ class ChatApp {
         });
     }
 
-    addMessage(role, date, text) {
+    addMessage(role, date, text, messageId = 0) {
         text = text.replace(/\n+$/, '').replace(/\n/g, '<br>');
         const messageType = role === "user" ? "request" : "response";
         const title = role === "user" ? "You" : "AI assistant";
 
         const messageHtml = `
-            <div class="message-container" id=message-id-${this.allMessages.length + 1}>
+            <div class="message-container" id=${messageId !== 0 ? messageId : "message-id-" + (this.allMessages.length + 1)}>
                 <div class="message-header header-${messageType}">
                     <span class="message-title">${title}</span>
                     <span class="separator"> - </span>
@@ -120,6 +120,7 @@ class ChatApp {
 
         const command = debug ? 'debug-command' : 'message';
         let APIResponse;
+        let messageId = 0;
 
         try {
 
@@ -133,20 +134,22 @@ class ChatApp {
             const json = await response.json()
 
             // Check if the response is valid
-            if (!json.content || !json.content.content || json.content.role !== "assistant") {
-                throw new Error("An error occured while communicating with the backend.");
+            if (!json.content || !json.content.content || json.content.role !== "assistant" || !json.messageId) {
+                throw new Error(`An error occured while communicating with the backend, response is not valid: ${json}.`);
             }
-            
+
             APIResponse = json.content.content;
+            messageId = json.messageId;
 
         } catch (error) {
             APIResponse = `An error occured.\n ${error}`;
         }
-    
+
         // Display the answer in the chat window
         vscode.postMessage({
             command: command,
-            text: APIResponse
+            text: APIResponse,
+            messageId: messageId
         });
     }
 
@@ -155,7 +158,7 @@ class ChatApp {
         switch (message.command) {
             case 'response':
                 this.removeLoader();
-                this.addMessage('assistant', new Date().toLocaleString(), message.text);
+                this.addMessage('assistant', new Date().toLocaleString(), message.text, message.messageId);
                 break;
             case 'loading':
                 this.addLoader();

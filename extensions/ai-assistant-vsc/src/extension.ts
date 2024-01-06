@@ -76,7 +76,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 			message => {
 				switch (message.command) {
 					case 'message':
-						webviewView.webview.postMessage({ command: 'response', text: message.text });
+						webviewView.webview.postMessage({ command: 'response', text: message.text, messageId: message.messageId });
 						return;
 					case 'loading':
 						webviewView.webview.postMessage({ command: 'loading' });
