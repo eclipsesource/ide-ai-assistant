@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
-import { controller, httpGet } from "inversify-express-utils";
+import { controller, httpGet, httpPut } from "inversify-express-utils";
 import { inject } from "inversify";
 import DatabaseService from "../services/database-service";
+import { Logger } from "../config";
 
 @controller("/database")
 export class DatabaseController {
   @inject(DatabaseService) private databaseService: DatabaseService;
+  @inject(Logger) private logger: Logger;
 
   @httpGet("/users")
   async getDatabase(req: Request, res: Response) {
@@ -39,4 +41,16 @@ export class DatabaseController {
     return res.json(messages);
   }
 
+  @httpPut("/messages")
+  async updateMessage(request: Request, response: Response) {
+    try {
+      const {messageId} = request.body;
+      this.databaseService.messageService.updateMessage(messageId, request.body);
+      this.logger.info('Successfully updated message');
+      return response.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error making update request:', error.message);
+      response.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
