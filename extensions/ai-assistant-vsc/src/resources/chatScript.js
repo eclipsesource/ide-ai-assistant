@@ -131,7 +131,11 @@ class ChatApp {
                     "Content-type": "application/json; charset=UTF-8",
                 }
             });
-            const json = await response.json()
+            const json = await response.json();
+
+            if (!response.ok){
+                throw new Error(`Status Code: ${response.status}\n${json.error.errorMessage}`);
+            }
 
             // Check if the response is valid
             if (!json.content || !json.content.content || json.content.role !== "assistant" || !json.messageId) {

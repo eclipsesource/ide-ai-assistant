@@ -20,7 +20,6 @@ export class AIAssistantController {
 
   @httpPost("/", validateBody(MessageRequest))
   async getAnswer(req: Request, res: Response) {
-    try {
       const { projectName } = req.body;
       
       const user = await this.getUser(req);
@@ -40,10 +39,6 @@ export class AIAssistantController {
       const APIMessage = await this.databaseService.messageService.createMessage(discussion, "assistant", response.content.content, null, null);
       
       return res.json({ ...response, messageId: APIMessage._id.toString() });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: error.message });
-    }
   }
 
   async getUser(req: Request): Promise<UserType> {

@@ -14,7 +14,6 @@ export class GithubOauthController {
 
   @httpPost("/")
   async startGithubOAuth(req: Request, res: Response) {
-    try {
       this.logger.info('Starting GitHub OAuth process');
       const { code } = req.body;
 
@@ -27,9 +26,5 @@ export class GithubOauthController {
 
       this.logger.info('GitHub OAuth process completed successfully');
       return res.status(200).json({ success: true, access_token: access_token });
-    } catch (error) {
-      this.logger.error('An error occurred while starting the GitHub OAuth process:' + error);
-      return res.status(500).json({ error: 'An error occurred while starting the GitHub OAuth process' });
-    }
   }
 }
