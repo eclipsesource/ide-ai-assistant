@@ -19,6 +19,16 @@ export const activate = async (context: vscode.ExtensionContext) => {
 	if (vscode.env.appName === THEIA_APP_NAME) {
 		await activateTheia(THEIA_APP_NAME, context, provider);
 	}
+
+	context.subscriptions.push(vscode.window.registerUriHandler({
+		handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
+			const query = new URLSearchParams(uri.query);
+			const code = query.get('code');
+
+			provider.resolveOauthConnection(code);
+			vscode.window.showInformationMessage(`Authorization was successful`);
+		}
+	}));
 };
 
 // This method is called when your extension is deactivated
@@ -56,7 +66,8 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 			// Allow scripts in the webview
 			enableScripts: true,
 			localResourceRoots: [
-				this._extensionUri
+				this._extensionUri,
+				vscode.Uri.parse('http://localhost:3001')
 			]
 		};
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
@@ -65,9 +76,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 			message => {
 				switch (message.command) {
 					case 'message':
-						// You can add your own logic here to process the message
-						// For now, we just send it back as a response
-						webviewView.webview.postMessage({ command: 'response', text: message.text });
+						webviewView.webview.postMessage({ command: 'response', text: message.text, messageId: message.messageId });
 						return;
 					case 'loading':
 						webviewView.webview.postMessage({ command: 'loading' });
@@ -83,6 +92,12 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 							terminal.sendText(terminalCommand, false);
 						};
 						return;
+					case 'openExternal':
+						vscode.env.openExternal(vscode.Uri.parse(message.url));
+						return;
+					case 'test':
+						vscode.window.showInformationMessage(message.text);
+						return;
 				}
 			},
 			undefined,
@@ -90,8 +105,13 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 		);
 	}
 
+	public resolveOauthConnection(code: string | null) {
+        this._view?.webview.postMessage({ command: 'githubOAuth', code: code });
+    }
+
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		const chatScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatScript.js'));
+		const loginScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'loginScript.js'));
 		const chatStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatStyle.css'));
 		const nonce = getNonce();
 
@@ -120,8 +140,26 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 		}
 
 		return /*html*/`
-			<html>
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+				<link href="${chatStyleUri}" rel="stylesheet">
+
+				<title>AI Assistant</title>
+			</head>
 			<body>
+				<div id="login-container" class="vscode-dark">
+					<div id="login">
+						<p>Sign in with GitHub to start chatting with the AI Assistant</p>
+						<button id="login-button">Sign in with GitHub</button>
+						<div id="login-info"></div>
+					</div>
+				</div>
+				
 				<div id="chat-container" class="vscode-dark">
 					<div id="chat-messages">
 						<!-- Messages will be added here by the script -->
@@ -133,12 +171,14 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 				</div>
 				<!-- <button id="get-error">Trigger an error</button> -->
 			
-				<link href="${chatStyleUri}" rel="stylesheet" />
 				<script nonce=${nonce}>
 					const userContext = ${JSON.stringify(userContextContent)}
 					const projectContext = ${JSON.stringify(projectContextContent)}
 				</script>
-				<script nonce=${nonce} src="${chatScriptUri}"></script>
+
+				<script nonce="${nonce}" src="${chatScriptUri}"></script>
+				<script nonce="${nonce}" src="${loginScriptUri}"></script>
+				
 			</body>
 			</html>
 		`;

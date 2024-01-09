@@ -1,0 +1,12 @@
+[
+    {
+        "login": "mathis-girault",
+        "role": "admin",
+        "projectLeads": []
+    },
+    {
+        "login": "test",
+        "role": "user",
+        "projectLeads": ["sampleProject"]
+    }
+]

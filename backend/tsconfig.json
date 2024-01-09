@@ -21,7 +21,6 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "target": "ES2017",
-        "jsx": "react",
         "lib": [
             "ES2017",
             "dom"
@@ -31,7 +30,8 @@
         "outDir": "lib"
     },
     "include": [
-        "src"
+        "src/**/*.ts",
+        "src/**/*.json"
     ],
     "exclude": [
         "src/**/*.test.ts"

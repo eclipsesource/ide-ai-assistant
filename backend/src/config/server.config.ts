@@ -29,7 +29,7 @@ export function serverErrorConfig(app: Application) {
             if (err.stack) {
                 logger.error(err.stack);
             }
-            return res.status(500).json(new InternalServerException(err.message));
+            return res.status(500).json({error: new InternalServerException(err.message)});
         }
 
         next();
