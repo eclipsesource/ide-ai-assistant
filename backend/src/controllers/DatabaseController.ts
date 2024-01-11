@@ -43,14 +43,9 @@ export class DatabaseController {
 
   @httpPut("/messages")
   async updateMessage(request: Request, response: Response) {
-    try {
       const {messageId} = request.body;
       this.databaseService.messageService.updateMessage(messageId, request.body);
       this.logger.info('Successfully updated message');
       return response.status(200).json({ success: true });
-    } catch (error) {
-      console.error('Error making update request:', error.message);
-      response.status(500).json({ error: 'Internal server error' });
-    }
   }
 }
