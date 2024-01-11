@@ -1,4 +1,4 @@
-const AI_BACKEND_URL = 'http://localhost:3001/services/aiAssistantBackend';
+const BACKEND_URL = 'http://localhost:3001/';
 
 class ChatApp {
     projectName = 'sampleProjectName';
@@ -9,7 +9,7 @@ class ChatApp {
         this.allMessages = [];
         this.input = document.getElementById('input');
         this.messagesContainer = document.getElementById('chat-messages');
-        this.endpoint = AI_BACKEND_URL;
+        this.endpoint = BACKEND_URL + 'services/aiAssistantBackend';
         this.displayLoading = false;
 
         // Setup initial message
@@ -33,9 +33,6 @@ class ChatApp {
             this.handleSendMessage();
             this.adjustTextareaHeight();
         });
-        document.getElementById('get-error')?.addEventListener('click', () => {
-            this.getError();
-        });
         this.input.addEventListener('input', () => this.adjustTextareaHeight());
         window.addEventListener('message', (event) => this.handleReceivedMessage(event));
         window.addEventListener('resize', () => this.adjustTextareaHeight());
@@ -52,31 +49,53 @@ class ChatApp {
         text = text.replace(/\n+$/, '').replace(/\n/g, '<br>');
         const messageType = role === "user" ? "request" : "response";
         const title = role === "user" ? "You" : "AI assistant";
+        const msgId = messageId !== 0 ? messageId : "message-id-" + (this.allMessages.length + 1);
 
         const messageHtml = `
-            <div class="message-container" id=${messageId !== 0 ? messageId : "message-id-" + (this.allMessages.length + 1)}>
-                <div class="message-header header-${messageType}">
-                    <span class="message-title">${title}</span>
-                    <span class="separator"> - </span>
-                    <span class="message-date">${date}</span>
-                </div>
-                <div class="message-text msg-${messageType}">${text}</div>
+            <div class="message-header header-${messageType}">
+                <span class="message-title">${title}</span>
+                <span class="separator"> - </span>
+                <span class="message-date">${date}</span>
+            </div>
+            <div class="message-text msg-${messageType}">${text}</div>
+        `;
+
+        const ratingHtml = `
+            <div class="rating" id="star-rating"> 
+            <input type="radio" id="star5-${msgId}" name="rating-${msgId}" value="5" onClick="handleRating(5, '${messageId}')">
+            <label for="star5-${msgId}"></label>
+            <input type="radio" id="star4-${msgId}" name="rating-${msgId}" value="4" onClick="handleRating(4, '${messageId}')">
+            <label for="star4-${msgId}"></label>
+            <input type="radio" id="star3-${msgId}" name="rating-${msgId}" value="3" onClick="handleRating(3, '${messageId}')">
+            <label for="star3-${msgId}"></label>
+            <input type="radio" id="star2-${msgId}" name="rating-${msgId}" value="2" onClick="handleRating(2, '${messageId}')">
+            <label for="star2-${msgId}"></label>
+            <input type="radio" id="star1-${msgId}" name="rating-${msgId}" value="1" onClick="handleRating(1, '${messageId}')">
+            <label for="star1-${msgId}"></label>
             </div>
         `;
 
+        const ratedMessageHtml = messageType === "response" && this.allMessages.length > 1 ? messageHtml + ratingHtml : messageHtml;
+
+        const messageElement = this.createDiv(msgId, "message-container", ratedMessageHtml);
+
         this.allMessages.push({ role, content: text });
-        this.messagesContainer.innerHTML += messageHtml;
+        this.messagesContainer.appendChild(messageElement);
     }
 
     addLoader() {
-        const messageHtml = `
-            <div class="message-container" id=loader>
-                <div class="message-text msg-response"></div>
-            </div>
-        `;
+        const loaderElement = this.createDiv("loader", "message-container", '<div class="message-text msg-response"></div>');
         if (this.displayLoading) {
-            this.messagesContainer.innerHTML += messageHtml;
+            this.messagesContainer.appendChild(loaderElement);
         }
+    }
+
+    createDiv(id, className, content) {
+        const messageElement = document.createElement("div");
+        messageElement.id = id;
+        messageElement.className = className;
+        messageElement.innerHTML = content;
+        return messageElement;
     }
 
     removeLoader() {
@@ -175,14 +194,21 @@ class ChatApp {
         }
     }
 
-    getError() {
-        let linkData = 'The assistant has detected an error in your execution. Do you want to ask the assistant for the command to solve it?';
-        // Send a link to the terminal 
-        vscode.postMessage({
-            command: 'handle-error',
-            linkData: linkData,
-            errorMsg: 'I have an error in my terminal "missing glob package". Give me the terminal command to solve this.'
-        });
-    }
-
 }
+
+// Method to update the rating for an API response asynchronously
+async function handleRating(ratingValue, messageId) {
+    const request = { messageId, rating: ratingValue }
+    const dbEndpoint = BACKEND_URL + 'database/messages';
+    try {
+        await fetch(dbEndpoint, {
+            method: "PUT",
+            body: JSON.stringify(request),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8",
+            }
+        });
+    } catch (error) {
+        // Any errors in this API must not affect the user experience
+    }
+};
