@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { controller, httpPost } from "inversify-express-utils";
+import { controller, httpGet, httpPost } from "inversify-express-utils";
 import { inject } from "inversify";
 import DatabaseService from "../services/database-service";
 import { Logger } from "../config";
@@ -26,5 +26,19 @@ export class GithubOauthController {
 
       this.logger.info('GitHub OAuth process completed successfully');
       return res.status(200).json({ success: true, access_token: access_token });
+  }
+
+  @httpGet("/validate-token/:token")
+  async validateToken(req: Request, res: Response) {
+    // No caching because token validity is time dependent
+    res.set('Cache-Control', 'no-store');
+
+    const { token } = req.params;
+
+    // Validate the token
+    const isValid = await this.oAuthService.validateToken(token);
+    console.log(isValid)
+
+    return res.status(isValid ? 200: 400).json({ success: isValid });
   }
 }

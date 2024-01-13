@@ -53,4 +53,5 @@ export interface AIAssistantBackendService {
 export interface OAuthService {
     getAccessToken(user_code: string): Promise<string>;
     getUserLogin(accessToken: string): Promise<string>;
+    validateToken(token: string): Promise<boolean>
 }

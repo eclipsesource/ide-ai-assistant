@@ -1,5 +1,3 @@
-const BACKEND_URL = 'http://localhost:3001/';
-
 class ChatApp {
     projectName = 'sampleProjectName';
 
@@ -21,6 +19,16 @@ class ChatApp {
 
         // Get contexts
         this.contexts = { user: userContext, project: projectContext };
+    }
+
+    loadMessages() {
+        const state = vscode.getState();
+        if (state && state.messages) {
+            this.allMessages = state.messages;
+            this.allMessages.forEach(message => {
+                this.addMessage(message.role, message.date, message.content, message.messageId);
+            });
+        }
     }
 
     adjustTextareaHeight() {

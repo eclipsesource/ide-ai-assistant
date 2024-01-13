@@ -14,7 +14,9 @@ const THEIA_APP_NAME = 'Theia Browser Example';
 export const activate = async (context: vscode.ExtensionContext) => {
 
 	const provider = new AIAssistantProvider(context.extensionUri, context);
+	const historyProvider = new AIAssistantHistoryProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantHistoryProvider.viewType, historyProvider));
 
 	if (vscode.env.appName === THEIA_APP_NAME) {
 		await activateTheia(THEIA_APP_NAME, context, provider);
@@ -95,7 +97,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 					case 'openExternal':
 						vscode.env.openExternal(vscode.Uri.parse(message.url));
 						return;
-					case 'test':
+					case 'info':
 						vscode.window.showInformationMessage(message.text);
 						return;
 				}
@@ -177,6 +179,77 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 
 				<script nonce="${nonce}" src="${chatScriptUri}"></script>
 				<script nonce="${nonce}" src="${loginScriptUri}"></script>
+				
+			</body>
+			</html>
+		`;
+	}
+}
+
+export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
+	public static readonly viewType = 'ai-assistant-vsc.historyView';
+	private _view?: vscode.WebviewView;
+	private _context: vscode.ExtensionContext;
+
+	constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+		this._context = context;
+	}
+
+	public async SendErrorNotification(message: ErrorObject) {
+		showErrorNotification(message, this._view!);
+	}
+
+	public resolveWebviewView(
+		webviewView: vscode.WebviewView,
+		_context: vscode.WebviewViewResolveContext,
+		_token: vscode.CancellationToken,
+	) {
+		this._view = webviewView;
+		webviewView.webview.options = {
+			// Allow scripts in the webview
+			enableScripts: true,
+			localResourceRoots: [
+				this._extensionUri,
+				vscode.Uri.parse('http://localhost:3001')
+			]
+		};
+		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+		webviewView.webview.onDidReceiveMessage(
+			message => {
+				switch (message.command) {
+					case 'message':
+						vscode.window.showInformationMessage(message.text);
+						return;
+				}
+			},
+			undefined,
+			this._context.subscriptions
+		);
+	}
+
+	private _getHtmlForWebview(webview: vscode.Webview) {
+		const historyScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyScript.js'));
+		const historyStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyStyle.css'));
+		const nonce = getNonce();
+
+
+		return /*html*/`
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+				<link href="${historyStyleUri}" rel="stylesheet">
+
+				<title>Messages History</title>
+			</head>
+			<body>
+				<div id="main">Test for now</div>
+			
+				<script nonce="${nonce}" src="${historyScriptUri}"></script>
 				
 			</body>
 			</html>
