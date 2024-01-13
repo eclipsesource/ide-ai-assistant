@@ -93,6 +93,18 @@ html, body {
   border-radius: 4px;
 }
 
+#readme-button {
+  width: 100%;
+  justify-content: center;
+  padding: 8px;
+  button {
+    background-color: #a2c7e5;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+}
+
 @keyframes loading {
   0% { opacity: 0.2; }
   50% { opacity: 1; }
@@ -104,13 +116,9 @@ html, body {
   animation: loading 1s infinite;
 }
 
-/* LOGING STYLE */
+/* LOGIN STYLE */
 
-#chat-container {
-  display: none;
-}
-
-#get-error {
+#chat-container, #readme-button {
   display: none;
 }
 

@@ -28,7 +28,7 @@ class GitHubOAuth {
 
             // Hardwire the OAuth for Theia
             const access_token = "";
-            this.handleConnection(access_token);
+            this.handleConnection(access_token, "admin");
             // this.openGitHubOAuthUrl();
         });
     }
@@ -65,22 +65,21 @@ class GitHubOAuth {
                 if (!data.success) {
                     throw new Error("There was an error connecting, please retry.");
                 }
-                this.handleConnection(data.access_token);
+                this.handleConnection(data.access_token, data.userRole);
             })
             .catch(error => {
                 this.infoDiv.textContent = "There was an error connecting with the backend, it might not be running." + error;
             });
     }
 
-    handleConnection(access_token) {
+    handleConnection(access_token, userRole) {
         if (access_token) {
             document.getElementById("login-container").style.display = 'none';
             document.getElementById("chat-container").style.display = 'flex';
-
-            if (document.getElementById("get-error")) {
-                document.getElementById("get-error").style.display = 'none';
-            }
             const _myChatApp = new ChatApp(access_token);
+        }
+        if (userRole == "admin") {
+            document.getElementById("readme-button").style.display = 'flex';
         }
     }
 }

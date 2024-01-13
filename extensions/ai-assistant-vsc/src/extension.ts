@@ -169,6 +169,10 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 						<button id="send">Send</button>
 					</div>
 				</div>
+
+				<div id="readme-button">
+					<button> Improve Readme </button>
+				</div>
 			
 				<script nonce=${nonce}>
 					const userContext = ${JSON.stringify(userContextContent)}
