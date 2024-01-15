@@ -1,6 +1,7 @@
 const BACKEND_URL = 'http://localhost:3001';
 const GITHUB_BACKEND_URL = `${BACKEND_URL}/github-oauth`;
 const vscode = acquireVsCodeApi();
+const THEIA_APP_NAME = 'Theia Browser Example';
 
 class GitHubOAuth {
     access_token = null;
@@ -17,6 +18,12 @@ class GitHubOAuth {
     }
 
     async setupLogin() {
+        if (isTheia) {
+            // Disable github Oauth for theia
+            this.access_token = "[Your own github token]"
+            this.handleConnection();
+            return;
+        }
         // Retreive the state
         const state = await vscode.getState();
         if (state && state.access_token) {
@@ -100,7 +107,6 @@ class GitHubOAuth {
     }
 
     handleConnection() {
-        this.infoDiv.textContent = this.access_token;
         if (this.access_token) {
             document.getElementById("login-container").style.display = 'none';
             document.getElementById("chat-container").style.display = 'flex';

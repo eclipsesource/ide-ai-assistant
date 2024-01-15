@@ -37,7 +37,6 @@ export class GithubOauthController {
 
     // Validate the token
     const isValid = await this.oAuthService.validateToken(token);
-    console.log(isValid)
 
     return res.status(isValid ? 200: 400).json({ success: isValid });
   }

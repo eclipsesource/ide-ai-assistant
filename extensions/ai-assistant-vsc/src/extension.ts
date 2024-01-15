@@ -8,7 +8,7 @@ interface ErrorObject {
 }
 import { activateTheia } from './theia';
 
-const THEIA_APP_NAME = 'Theia Browser Example';
+const THEIA_APP_NAME = 'Eclipse Theia'; // 'Theia Browser Example';
 
 // This method is called when your extension is activated
 export const activate = async (context: vscode.ExtensionContext) => {
@@ -173,8 +173,9 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 				</div>
 			
 				<script nonce=${nonce}>
-					const userContext = ${JSON.stringify(userContextContent)}
-					const projectContext = ${JSON.stringify(projectContextContent)}
+					const isTheia = ${vscode.env.appName === THEIA_APP_NAME};
+					const userContext = ${JSON.stringify(userContextContent)};
+					const projectContext = ${JSON.stringify(projectContextContent)};
 				</script>
 
 				<script nonce="${nonce}" src="${chatScriptUri}"></script>
