@@ -21,25 +21,35 @@ export class DatabaseController {
     return res.json(response);
   }
 
-  @httpGet("/discussions")
+  @httpGet("/projects/:projectName/discussions")
   async getDiscussions(req: Request, res: Response) {
-    const response = await this.databaseService.discussionService.getAllDiscussions();
+    const project = await this.databaseService.projectService.getProjectByName(req.params.projectName);
+    if (!project) {
+      throw new Error(`Project with name ${req.params.projectName} does not exist`);
+    }
+    const response = await this.databaseService.discussionService.getDiscussionByProject(project);
     return res.json(response);
   }
 
-  @httpGet("/messages")
+  @httpGet("/discussions/:discussionId/messages")
   async getMessages(req: Request, res: Response) {
-    const response = await this.databaseService.messageService.getAllMessages();
+    const response = await this.databaseService.messageService.getMessagesByDiscussionId(req.params.discussionId);
     return res.json(response);
   }
 
-  @httpGet("discussions/:id")
-  async getDiscussion(req: Request, res: Response) {
-    const { id } = req.params;
-    // const response = await this.discussionService.getDiscussionById(id);
-    const messages = await this.databaseService.messageService.getMessagesByDiscussionId(id);
-    return res.json(messages);
-  }
+  // @httpGet("/messages")
+  // async getMessages(req: Request, res: Response) {
+  //   const response = await this.databaseService.messageService.getAllMessages();
+  //   return res.json(response);
+  // }
+
+  // @httpGet("discussions/:id")
+  // async getDiscussion(req: Request, res: Response) {
+  //   const { id } = req.params;
+  //   // const response = await this.discussionService.getDiscussionById(id);
+  //   const messages = await this.databaseService.messageService.getMessagesByDiscussionId(id);
+  //   return res.json(messages);
+  // }
 
   @httpPut("/messages")
   async updateMessage(request: Request, response: Response) {

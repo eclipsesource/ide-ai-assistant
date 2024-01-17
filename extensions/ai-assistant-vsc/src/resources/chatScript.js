@@ -1,5 +1,5 @@
 class ChatApp {
-  projectName = "sampleProjectName";
+  projectName = "sampleProject";
 
   constructor(access_token) {
     this.access_token = access_token;
@@ -19,6 +19,7 @@ class ChatApp {
     this.contexts = { user: userContext, project: projectContext };
 
     // Retrieve messages from the state
+    // vscode.setState({ access_token: vscode.getState().access_token }); // To uncomment if needed to reset 
     this.loadMessages();
   }
 

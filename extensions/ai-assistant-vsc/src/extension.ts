@@ -232,6 +232,7 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		const historyScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyScript.js'));
 		const historyStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyStyle.css'));
+		const arrowImageUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'arrow.png'));
 		const nonce = getNonce();
 
 
@@ -244,14 +245,63 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 				<link href="${historyStyleUri}" rel="stylesheet">
+				<script defer nonce="${nonce}" src="${historyScriptUri}"></script>
 
-				<title>Messages History</title>
+				<style>
+					:root {
+						--arrow-image: url('${arrowImageUri}');
+					}
+				</style>
+				<title>Messages history</title>
 			</head>
 			<body>
-				<div id="main">Test for now</div>
-			
-				<script nonce="${nonce}" src="${historyScriptUri}"></script>
-				
+
+				<div id="container">
+					<div id="header">
+						<h3 id="history-title">Messages History</h3>
+						<p id="history-explanation">[Insert some explanation here]<p>
+						<div id="header-controls">
+							<input type="button" id="send-messages" value="Send" />
+							<input type="checkbox" class="history-checkbox" />
+						</div>
+						<div id="info"></div>
+					</div>
+
+					<div id="main">
+						<div id="discussions-container">
+							<!-- Discussions and messages will be added here by the script -->
+						</div>
+					
+					</div>
+				</div>
+
+				<div id="copy-samples" style="display: none">
+
+				<!-- Sample discussion element to be copied -->
+					<div class="discussion">
+						<div class="discussion-header">
+							<div class="header-container">
+								<div class="header-arrow"></div>
+								<h5 class="header-title"></h5>
+								</div>
+							<input type="checkbox" class="history-checkbox" />
+						</div>
+						<div class="discussion-body">
+							
+						</div>
+					</div>
+
+					<!-- Sample message element to be copied -->
+					<div class="message-block">
+						<div class="block-container">
+							<p class="message-element message-request"></p>
+							<p class="message-element message-response"></p>
+						</div>
+						<input type="checkbox" class="history-checkbox" />
+					</div>
+				</div>
+
+
 			</body>
 			</html>
 		`;

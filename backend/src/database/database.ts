@@ -3,7 +3,7 @@ import { Logger } from "../config";
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import fs from 'fs';
 import path from 'path';
-import { UserService, ProjectService } from './services';
+import { UserService, ProjectService, DiscussionService, MessageService } from './services';
 
 export const Database = Symbol('Database');
 
@@ -44,6 +44,7 @@ export class MongoDB implements Database {
 
     // Populate with users data
     await this.initializeDb();
+    await this.samplePopulate();
   }
 
   async close() {
@@ -97,4 +98,23 @@ export class MongoDB implements Database {
       this.logger.error(`Error during data instantiation: ${error}`);
     }
   };
+
+  async samplePopulate() {
+    const userService = new UserService();
+    const projectService = new ProjectService();
+    const discussionService = new DiscussionService();
+    const messageService = new MessageService();
+
+    const testUser = await userService.getUserByLogin("test");
+    const defaultProject = await projectService.getProjectByName("sampleProject");
+    if (!testUser || !defaultProject) {
+      throw new Error("User or project test not found");
+    }
+
+    const testDiscussion = await discussionService.createDiscussion(testUser, defaultProject);
+    messageService.createMessage(testDiscussion, "user", "test message", null, null);
+    messageService.createMessage(testDiscussion, "assistant", "test response", null, null);
+    messageService.createMessage(testDiscussion, "user", "test request 2", null, null);
+    messageService.createMessage(testDiscussion, "assistant", "test response 2", null, null);
+  }
 }
