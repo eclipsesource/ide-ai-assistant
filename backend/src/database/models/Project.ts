@@ -1,12 +1,12 @@
 import { Document, Schema, model, Types } from 'mongoose';
 
 interface ProjectType extends Document {
-    projectName: string;
+    project_name: string;
     projectLeads: Types.ObjectId[];
 }
 
 const ProjectSchema = new Schema({
-    projectName: {
+    project_name: {
         type: String,
         required: true,
         unique: true,

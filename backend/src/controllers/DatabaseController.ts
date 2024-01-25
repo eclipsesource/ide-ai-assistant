@@ -21,11 +21,12 @@ export class DatabaseController {
     return res.json(response);
   }
 
-  @httpGet("/projects/:projectName/discussions")
+  @httpGet("/projects/:project_name/discussions")
   async getDiscussions(req: Request, res: Response) {
-    const project = await this.databaseService.projectService.getProjectByName(req.params.projectName);
+    const projectName = decodeURIComponent(req.params.project_name);
+    const project = await this.databaseService.projectService.getProjectByName(projectName);
     if (!project) {
-      throw new Error(`Project with name ${req.params.projectName} does not exist`);
+      throw new Error(`Project with name ${projectName} does not exist`);
     }
     const response = await this.databaseService.discussionService.getDiscussionByProject(project);
     return res.json(response);

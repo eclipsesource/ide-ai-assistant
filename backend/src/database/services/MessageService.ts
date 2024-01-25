@@ -40,7 +40,7 @@ export class MessageService {
         return messages;
     }
 
-    public async getMessagesByProjectName(project: ProjectType): Promise<MessageType[]> {
+    public async getMessagesByproject_name(project: ProjectType): Promise<MessageType[]> {
         const discussions = await Discussion.find({ projectId: project._id });
     
         // Find messages related to the discussions

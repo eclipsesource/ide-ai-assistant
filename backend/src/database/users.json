@@ -7,6 +7,6 @@
     {
         "login": "test",
         "role": "user",
-        "projectLeads": ["sampleProject"]
+        "projectLeads": ["@theia/monorepo"]
     }
 ]

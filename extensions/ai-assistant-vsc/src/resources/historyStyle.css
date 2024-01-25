@@ -90,7 +90,7 @@ body {
   transform: rotate(90deg);
 }
 
-.discussion-body {
+.discussion-body, .placeholder {
   display: none;
 }
 

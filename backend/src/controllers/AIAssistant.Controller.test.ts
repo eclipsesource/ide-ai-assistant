@@ -32,6 +32,7 @@ describe("Create the App with controllers and check that we get a response", () 
   };
   const fakeAIAssistant = {
     getAnswer: jest.fn(() => Promise.resolve(expectedAnswer)),
+    summarizeMessages: jest.fn(() => Promise.resolve([])),
   };
 
   const fakeOAuthService: OAuthService = {
@@ -68,24 +69,24 @@ describe("Create the App with controllers and check that we get a response", () 
     {
       messages: [{ role: "user", content: "Hello" }],
       access_token: "dummy",
-      projectName: "dummy",
+      project_name: "dummy",
     },
     {
       messages: [{ role: "user", content: "Hello" }],
       access_token: "dummy",
-      projectName: "dummy",
+      project_name: "dummy",
       projectContext: "dummy",
     },
     {
       messages: [{ role: "user", content: "Hello" }],
       access_token: "dummy",
-      projectName: "dummy",
+      project_name: "dummy",
       userContext: "dummy",
     },
     {
       messages: [{ role: "user", content: "Hello" }],
       access_token: "dummy",
-      projectName: "dummy",
+      project_name: "dummy",
       projectContext: "dummy",
       userContext: "dummy",
     },
@@ -96,7 +97,7 @@ describe("Create the App with controllers and check that we get a response", () 
       request: {
         message: [{ role: "user", content: "Hello" }],
         access_token: "dummy_token",
-        projectName: "dummy_project",
+        project_name: "dummy_project",
       },
       description: "Missing 'messages' field",
     },
@@ -104,7 +105,7 @@ describe("Create the App with controllers and check that we get a response", () 
       request: {
         messages: [],
         access_token: "dummy_token",
-        projectName: "dummy_project",
+        project_name: "dummy_project",
       },
       description: "Empty 'messages' field",
     },
@@ -113,12 +114,12 @@ describe("Create the App with controllers and check that we get a response", () 
         messages: [{ role: "user", content: "Hello" }],
         access_token: "dummy_token",
       },
-      description: "Empty 'projectName' field",
+      description: "Empty 'project_name' field",
     },
     {
       request: {
         messages: [{ role: "user", content: "Hello" }],
-        projectName: "dummy_project",
+        project_name: "dummy_project",
       },
       description: "Empty 'access_token' field",
     },

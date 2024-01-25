@@ -82,10 +82,10 @@ export class MongoDB implements Database {
 
         if (projectLeads) {
           // Instantiate projects leads
-          await Promise.all(projectLeads.map(async (projectName) => {
-            let project = await projectService.getProjectByName(projectName);
+          await Promise.all(projectLeads.map(async (project_name) => {
+            let project = await projectService.getProjectByName(project_name);
             if (!project) {
-              project = await projectService.createProject(projectName);
+              project = await projectService.createProject(project_name);
             }
 
             projectService.addProjectLead(project, user);
@@ -106,7 +106,7 @@ export class MongoDB implements Database {
     const messageService = new MessageService();
 
     const testUser = await userService.getUserByLogin("test");
-    const defaultProject = await projectService.getProjectByName("sampleProject");
+    const defaultProject = await projectService.getProjectByName("@theia/monorepo");
     if (!testUser || !defaultProject) {
       throw new Error("User or project test not found");
     }

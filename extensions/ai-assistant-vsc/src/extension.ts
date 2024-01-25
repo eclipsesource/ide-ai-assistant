@@ -100,6 +100,10 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 					case 'info':
 						vscode.window.showInformationMessage(message.text);
 						return;
+					case 'set-variables':
+						this._context.globalState.update('access_token', message.access_token);
+						this._context.globalState.update('project_name', message.project_name);
+						return;
 				}
 			},
 			undefined,
@@ -222,6 +226,10 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 					case 'message':
 						vscode.window.showInformationMessage(message.text);
 						return;
+					case 'get-variables':
+						vscode.window.showInformationMessage(message);
+						webviewView.webview.postMessage({ command: 'get-variables', access_token: this._context.globalState.get('access_token'), project_name: this._context.globalState.get('project_name') });
+						return;
 				}
 			},
 			undefined,
@@ -283,11 +291,11 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 							<div class="header-container">
 								<div class="header-arrow"></div>
 								<h5 class="header-title"></h5>
-								</div>
+							</div>
 							<input type="checkbox" class="history-checkbox" />
 						</div>
 						<div class="discussion-body">
-							
+							<p class="placeholder"> Summurazing messages ... </p>
 						</div>
 					</div>
 

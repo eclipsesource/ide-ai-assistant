@@ -3,8 +3,8 @@ import { Project, ProjectType, UserType } from '../models';
 
 export class ProjectService {
 
-    public async createProject(projectName: string): Promise<ProjectType> {
-        const newProject = new Project({ projectName: projectName });
+    public async createProject(project_name: string): Promise<ProjectType> {
+        const newProject = new Project({ project_name: project_name });
         const savedProject = await newProject.save() as ProjectType;
         return savedProject;
     }
@@ -14,8 +14,8 @@ export class ProjectService {
         return projects;
     }
 
-    public async getProjectByName(projectName: string): Promise<ProjectType | null> {
-        const project = await Project.findOne({ projectName });
+    public async getProjectByName(project_name: string): Promise<ProjectType | null> {
+        const project = await Project.findOne({ project_name });
         return project;
     }
 

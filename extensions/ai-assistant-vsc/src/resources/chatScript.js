@@ -1,5 +1,5 @@
 class ChatApp {
-  projectName = "sampleProject";
+  project_name = "@theia/monorepo";
 
   constructor(access_token) {
     this.access_token = access_token;
@@ -21,6 +21,9 @@ class ChatApp {
     // Retrieve messages from the state
     // vscode.setState({ access_token: vscode.getState().access_token }); // To uncomment if needed to reset 
     this.loadMessages();
+
+    // Set variables to pass them to the other panel.
+    vscode.postMessage({ command: "set-variables", access_token: this.access_token, project_name: this.project_name});
   }
 
   loadMessages() {
@@ -218,7 +221,7 @@ class ChatApp {
       projectContext: this.contexts.project,
       userContext: this.contexts.user,
       access_token: this.access_token,
-      projectName: this.projectName,
+      project_name: this.project_name,
     };
 
     const command = debug ? "debug-command" : "message";

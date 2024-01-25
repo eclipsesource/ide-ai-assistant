@@ -25,14 +25,39 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
             throw new BadRequestException(errorMessage);
         }
 
-        if (request.projectContext || request.userContext) {
-            this.generateContextMessage(request);
-        }
+        this.generateContextMessage(request);
+
         const newContent = await this.getAnswerFromOpenAI(request.messages);
 
         return new Promise<MessageResponse>((resolve) => {
             resolve({ content: newContent });
         });
+    }
+
+    async summarizeMessages(request: MessageRequest): Promise<Message[]> {
+        const [isValidRequest, errorMessage] = this.validRequest(request);
+        if (!isValidRequest) {
+            throw new BadRequestException(errorMessage);
+        }
+
+        const formatedMessages: Message[] = [];
+        formatedMessages.push(this.generateSummarizeMessage(request));
+        formatedMessages.push({"role": "user", content: JSON.stringify(request.messages) });
+
+        const answer: Message = await this.getAnswerFromOpenAI(formatedMessages);
+
+        if (answer.content === null) {
+            throw new BaseException("OpenAI returned null", 500, "OpenAI returned null");
+        }
+
+        // Parse the markdown returned by OpenAI to get the JSON object
+        const parsedText = answer.content.replace(/```json\n|\n```/g, '').trim();
+        const newMessages = JSON.parse(parsedText);
+        if (!Array.isArray(newMessages) || !newMessages.every(msg => typeof msg === 'object' && 'content' in msg)) {
+            throw new BaseException("OpenAI returned invalid JSON", 500, "OpenAI returned invalid JSON");
+        }
+
+        return new Promise<Message[]>((resolve) => { resolve( newMessages ); });
     }
 
     private validRequest(request: MessageRequest): [boolean, string] {
@@ -75,5 +100,24 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
         }
 
         request.messages.unshift({ role: "user", content: InstructionMessage });
+    }
+
+    private generateSummarizeMessage(request: MessageRequest): Message {
+        const InstructionMessage = `You are an AI assistant in an IDE.
+        You are helping a developper, which is the project lead on the currently opened project ${request.project_name}.
+        The main goal here is for you to summarize a list of messages. 
+        These messages correspond to discussions between other developpers working on this project and an AI assistant.
+        Theses messages will be passed as message content in the next message.
+        Please return a JSON object containing the summarized messages following the format: 
+        [{content: "message 1 request", role: "user"}, {content: "message 1 response", role: "assistant"}, ...]
+        The role should either be 'user' for the questions or 'assistant' for the responses, but should should keep what you have in input messages. 
+        The messages will be interpreted by pairs, it is supposed to have them in order question then response.
+        
+        What is asked of you is to summarize the messages.
+        This could mean omitting some messages that are deemed irrelevant or that are asked multiple times.
+        Long messages could also be shortened in order to keep only the important parts.
+        `;
+
+        return { role: "user", content: InstructionMessage };
     }
 }

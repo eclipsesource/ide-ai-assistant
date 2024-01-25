@@ -2,18 +2,15 @@ const vscode = acquireVsCodeApi();
 const BACKEND_URL = 'http://localhost:3001';
 const infoDiv = document.getElementById('info');
 
+var project_name = null;
+var access_token = null;
+
 class HistoryManager {
-    projectName = "sampleProject";
     discussionsList = [];
     selected = false;
 
-    constructor() {
-        this.setupHistory();
-    }
-
     async setupHistory() {
-        
-        const discussions = await this.getDiscussions(this.projectName);
+        const discussions = await this.getDiscussions();
         this.addDiscussions(discussions);
         
         // Event listener for checkbox
@@ -23,17 +20,16 @@ class HistoryManager {
                 discussion.setSelection(this.selected);
             });
         });
-        
-        
+
         // Event listener for send button
         document.getElementById('send-messages').addEventListener('click', () => {
             this.handleSending();
         });
     }
 
-    async getDiscussions(projectName) {
-        const requestUrl = `${BACKEND_URL}/database/projects/${projectName}/discussions`;
-        const response = await fetch(requestUrl);
+    async getDiscussions() {
+        const encodedProjectName = encodeURIComponent(project_name);
+        const response = await fetch(`${BACKEND_URL}/database/projects/${encodedProjectName}/discussions`);
         const discussions = await response.json();
         return discussions;
     }
@@ -73,6 +69,7 @@ class Discussion {
     darkMode = (getComputedStyle(document.body).getPropertyValue('--vscode-editor-foreground') === "#1f1f1f")
     messagesBlockList = [];
     selected = false;
+    placeholder = false;
 
     constructor(discussion, discussionFrontId) {
         this.discussion = discussion;
@@ -93,9 +90,33 @@ class Discussion {
     }
 
     async setupMessages() {
+        // Set a placeholder message
+        this.discussionContainer.querySelector('.placeholder').style.display = 'block';
+
         // Set messages within the discussion
-        const messages = await this.getMessages(this.discussion._id);
-        this.addMessagesBlock(messages);
+        const dbMessages = await this.getMessages(this.discussion._id);
+        const filteredMessages = dbMessages.map((message) => {
+            return { role: message.role, content: message.content };
+        });
+
+        const summarizeRequest = {
+            messages: filteredMessages,
+            access_token: access_token,
+            project_name: project_name,
+          };
+
+        fetch(`${BACKEND_URL}/services/aiAssistantBackend/summarize`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(summarizeRequest),
+        })
+            .then(response => response.json())
+            .then(messages => { 
+                this.addMessagesBlock(messages);
+            });
     }
 
     async getMessages(discussionId) {
@@ -145,6 +166,13 @@ class Discussion {
     }
 
     addMessagesBlock(messages) {
+        if (messages.length < 2) {
+            // TODO hide the whole discussion (display none) in that case?
+            this.discussionContainer.querySelector('.placeholder').textContent = "No messages in this discussion.";
+            return;
+        }
+        this.discussionContainer.querySelector('.placeholder').style.display = 'none';
+
         const discussionBody = this.discussionElement.querySelector('.discussion-body');
         let i = 0;
         while (i < messages.length - 1) {
@@ -199,4 +227,27 @@ class MessageBlock {
     }
 }
 
-const _historyManager = new HistoryManager();
+window.addEventListener("message", (event) => {
+    const message = event.data;
+    switch (message.command) {
+        case "get-variables":
+            project_name = message.project_name;
+            access_token = message.access_token;
+            break;
+    }
+});
+
+function main() {
+    const _historyManager = new HistoryManager();
+    let intervalId = setInterval(() => {
+        if (access_token !== null && project_name !== null) {
+            _historyManager.setupHistory();
+            clearInterval(intervalId);
+        } else {
+            vscode.postMessage({ command: "get-variables" });
+        }
+    }, 200);
+}
+
+vscode.postMessage({ command: "get-variables" });
+setTimeout(main, 20);

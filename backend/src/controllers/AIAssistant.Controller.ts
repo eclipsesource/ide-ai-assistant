@@ -20,10 +20,10 @@ export class AIAssistantController {
 
   @httpPost("/", validateBody(MessageRequest))
   async getAnswer(req: Request, res: Response) {
-      const { projectName } = req.body;
+      const { project_name } = req.body;
       
       const user = await this.getUser(req);
-      const project = await this.getProject(projectName);
+      const project = await this.getProject(project_name);
       const discussion = await this.getDiscussion(user, project);
       
       // Add user message to database
@@ -41,6 +41,14 @@ export class AIAssistantController {
       return res.json({ ...response, messageId: APIMessage._id.toString() });
   }
 
+  @httpPost("/summarize", validateBody(MessageRequest))
+  async summarizeMessages(req: Request, res: Response) {
+    await this.getUser(req); // Assert aceess_token is valid
+
+    const response = await this.aiAssistant.summarizeMessages(req.body);
+    return res.json(response);
+  }
+
   async getUser(req: Request): Promise<UserType> {
       const { access_token } = req.body;
       const user_login = await this.oAuthService.getUserLogin(access_token);
@@ -53,9 +61,9 @@ export class AIAssistantController {
       return user;
     }
   
-  async getProject(projectName: string): Promise<ProjectType> {
-    const project = await this.databaseService.projectService.getProjectByName(projectName)
-                  || await this.databaseService.projectService.createProject(projectName);
+  async getProject(project_name: string): Promise<ProjectType> {
+    const project = await this.databaseService.projectService.getProjectByName(project_name)
+                  || await this.databaseService.projectService.createProject(project_name);
     return project;
   }
 
