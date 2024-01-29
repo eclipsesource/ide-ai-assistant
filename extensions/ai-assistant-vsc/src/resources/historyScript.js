@@ -12,6 +12,7 @@ class HistoryManager {
 
     constructor() {
         this.setupEventsListeners();
+        this.contexts = { user: userContext, project: projectContext };
     }
 
     async setupEventsListeners() {
@@ -46,7 +47,26 @@ class HistoryManager {
 
         // Here send messages and do something with receiving
         infoDiv.textContent = `${selectedMessages.length} messages would be sent right now.`;
-        // TODO
+        this.postGenerateReadmeMessage(selectedMessages);
+    }
+    
+    async postGenerateReadmeMessage(selectedMessages) {
+        let messages = [];
+        selectedMessages.forEach(message => {
+            messages.push({ content: message.content, role: message.role });
+        });
+        
+        const request = {
+            messages: messages,
+            projectContext: this.contexts.project,
+            userContext: this.contexts.user,
+            // TODO: May need to add token for authentication
+            // access_token: this.access_token,
+            projectName: this.projectName,
+        };
+        
+        vscode.postMessage({ command: 'generateReadME', request: request});
+        return messages;
     }
 
     async handleConnection() {
@@ -74,7 +94,7 @@ class HistoryManager {
             mainDiv.style.display = "block";
             mainDiv.innerHTML = `<p> An error occured while fetching messages: \n ${error} </p>`;
             return;
-        })
+        });
     }
 
     async setupMessages() {
@@ -148,7 +168,7 @@ class MessageBlock {
     createMessageBlockDiv() {
         const sampleDiv = document.getElementById('copy-samples').querySelector('.message-container');
         const newMessageBlockDiv = sampleDiv.cloneNode(true);
-        
+
         newMessageBlockDiv.id = `message-${this.messageBlockId}`;
         isDarkMode && (newMessageBlockDiv.querySelector('.header-arrow').classList.add('dark'));
         (this.messageBlockId % 2 === 0) && (newMessageBlockDiv.classList.add('highlighted'));

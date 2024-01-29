@@ -5,6 +5,11 @@
         "projectLeads": ["@theia/monorepo"]
     },
     {
+        "login": "Stibreant",
+        "role": "admin",
+        "projectLeads": []
+    },
+    {
         "login": "test",
         "role": "user",
         "projectLeads": ["@theia/monorepo"]

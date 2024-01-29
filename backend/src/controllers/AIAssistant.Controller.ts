@@ -13,7 +13,7 @@ interface Request extends ExpressRequest {
 
 @controller(AIASSISTANTSERVICE_BACKEND_PATH)
 export class AIAssistantController {
-  
+
   @inject(AIAssistantBackendService) private aiAssistant: AIAssistantBackendService;
   @inject(OAuthService) private oAuthService: OAuthService;
   @inject(DatabaseService) private databaseService: DatabaseService;
@@ -87,7 +87,16 @@ export class AIAssistantController {
 
   async getDiscussion(user: UserType, project: ProjectType): Promise<DiscussionType> {
     const discussion = await this.databaseService.discussionService.getDiscussion(user, project)
-                    || await this.databaseService.discussionService.createDiscussion(user, project);
+      || await this.databaseService.discussionService.createDiscussion(user, project);
     return discussion;
+  }
+
+  @httpPost("/generateReadME")
+  async generateReadME(req: Request, res: Response) {
+    //TODO: Autherization  
+    
+    let response = await this.aiAssistant.generateReadME(req.body);
+
+    return res.json(response);
   }
 }

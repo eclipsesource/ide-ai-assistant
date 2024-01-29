@@ -12,7 +12,7 @@ class GitHubOAuth {
 
         this.baseGithubOAuthUrl = 'https://github.com/login/oauth/authorize';
         this.redirectUri = 'vscode://EclipseSource.ai-assistant-vsc';
-        this.scope = 'user:email'
+        this.scope = 'user:email';
 
         this.setupLogin();
     }
@@ -20,14 +20,14 @@ class GitHubOAuth {
     async setupLogin() {
         if (isTheia) {
             // Disable github Oauth for theia
-            this.access_token = "[Your access token]"
+            this.access_token = "[Your access token]";
             this.handleConnection();
             return;
         }
         // Retreive the state
         const state = await vscode.getState();
         if (state && state.access_token) {
-            const isTokenValid = await this.verifyToken(state.access_token)
+            const isTokenValid = await this.verifyToken(state.access_token);
 
             if (isTokenValid) {
                 this.access_token = state.access_token;

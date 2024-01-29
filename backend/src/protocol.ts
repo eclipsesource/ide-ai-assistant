@@ -22,14 +22,14 @@ export class MessageTools extends Message {
 }
 
 export class Tool {
-    id: string
-    type: string
-    function: Function
+    id: string;
+    type: string;
+    function: Function;
 }
 
 export class Function {
-    name: string
-    arguments: any
+    name: string;
+    arguments: any;
 }
 
 export class MessageRequest {
@@ -47,6 +47,10 @@ export class MessageRequest {
     userContext?: string;
 
     @IsString()
+    @IsOptional()
+    readme?: string;
+
+    @IsString()
     access_token: string;
 
     @IsString()
@@ -61,7 +65,7 @@ export type GitHubIssueRequest = {
     ownerName: string
     repoName: string
     issueNumber: number
-}
+};
 
 //OpenAI Backend Service
 export const AIAssistantBackendService = Symbol('AIAssistantBackendService');
@@ -71,6 +75,7 @@ export const AIASSISTANTSERVICE_BACKEND_PATH = '/services/aiAssistantBackend';
 export interface AIAssistantBackendService {
     getAnswer(question: MessageRequest): Promise<MessageResponse>
     summarizeMessages(messages: MessageRequest): Promise<Message[]>
+    generateReadME(request: MessageRequest): Promise<string>
 }
 
 export interface OAuthService {

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 const fs = require('fs');
 
+const BACKEND_URL = 'http://localhost:3001';
 interface ErrorObject {
 	command: string;
 	linkData: string;
@@ -44,6 +45,26 @@ export function deactivate(context: vscode.ExtensionContext) {
 			console.error(error);
 		}
 	});
+}
+
+function getContext(extensionUri: vscode.Uri) {
+	let userContextContent: any;
+	let projectContextContent: any;
+	try {
+		const userContextPath = vscode.Uri.joinPath(extensionUri, 'src/context', 'user_context.txt').fsPath;
+		userContextContent = fs.readFileSync(userContextPath, 'utf8');
+
+	} catch (err) {
+		console.error(`Unable to read user context file: ${err}`);
+	}
+	try {
+		const projectContextPath = vscode.Uri.joinPath(extensionUri, 'src/context', 'project_context.txt').fsPath;
+		projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
+
+	} catch (err) {
+		console.error(`Unable to read project context file: ${err}`);
+	}
+	return [userContextContent, projectContextContent];
 }
 
 export class AIAssistantProvider implements vscode.WebviewViewProvider {
@@ -117,8 +138,8 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 	}
 
 	public resolveOauthConnection(code: string | null) {
-        this._view?.webview.postMessage({ command: 'githubOAuth', code: code });
-    }
+		this._view?.webview.postMessage({ command: 'githubOAuth', code: code });
+	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		const chatScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatScript.js'));
@@ -133,23 +154,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 		const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
 		contextReader.generateContexts(projectFile || '');
 
-		let userContextContent: any;
-		let projectContextContent: any;
-
-		try {
-			const userContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'user_context.txt').fsPath;
-			userContextContent = fs.readFileSync(userContextPath, 'utf8');
-
-		} catch (err) {
-			console.error(`Unable to read user context file: ${err}`);
-		}
-		try {
-			const projectContextPath = vscode.Uri.joinPath(this._extensionUri, 'src/context', 'project_context.txt').fsPath;
-			projectContextContent = fs.readFileSync(projectContextPath, 'utf8');
-
-		} catch (err) {
-			console.error(`Unable to read project context file: ${err}`);
-		}
+		let [userContextContent, projectContextContent] = getContext(this._extensionUri);
 
 		return /*html*/`
 			<!DOCTYPE html>
@@ -227,8 +232,47 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
 		webviewView.webview.onDidReceiveMessage(
-			message => {
+			async message => {
 				switch (message.command) {
+					case 'generateReadME':
+						let request = message.request;
+
+						// Add original README to the request
+						if (!vscode.workspace.workspaceFolders) {
+							vscode.window.showInformationMessage('No workspace opened');
+							return;
+						}
+						const filePath = vscode.workspace.workspaceFolders[0].uri.fsPath + '\\README.md';
+						const fileSystem = vscode.workspace.fs;
+						let originalContent = await fileSystem.readFile(vscode.Uri.file(filePath));
+						request.readme = originalContent.toString();
+
+						const newReadME = await this.sendGenerateReadMERequest(request);
+
+						// Create a new untitled file
+						const uri = vscode.Uri.parse("untitled:" + vscode.workspace.workspaceFolders[0].uri.fsPath + "/GeneratedReadME.md");
+						const document = await vscode.workspace.openTextDocument(uri);
+						const editor = new vscode.WorkspaceEdit();
+						editor.insert(uri, new vscode.Position(0, 0), newReadME);
+						vscode.workspace.applyEdit(editor);
+
+						// Show the diff between the original content and the new file
+						await vscode.workspace.openTextDocument(filePath);
+						vscode.commands.executeCommand("vscode.diff", vscode.Uri.file(filePath), uri);
+
+						vscode.window.showInformationMessage("Do you want to overwrite the readme", 'Yes', 'No').then(async action => {
+							if (action === 'Yes') {
+								vscode.window.showInformationMessage('File overwritten');
+								const newContent = document.getText();
+
+								// Write the content of File B to File A
+								await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(newContent));
+							}
+							if (action === 'No') {
+								vscode.window.showInformationMessage('You can manually make changes and save the file');
+							}
+						});
+						return;
 					case 'message':
 						vscode.window.showInformationMessage(message.text);
 						return;
@@ -243,12 +287,31 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 		);
 	}
 
+	private async sendGenerateReadMERequest(request: any) {
+		const response = await fetch(`${BACKEND_URL}/services/aiAssistantBackend/generateReadME`, {
+			method: "POST",
+			body: JSON.stringify(request),
+			headers: {
+				"Content-type": "application/json; charset=UTF-8",
+			},
+		});
+		const json = await response.json();
+
+		if (!response.ok) {
+			throw new Error(
+				`Status Code: ${response.status}\n${json.error.errorMessage}`
+			);
+		}
+		return json;
+	}
+
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		const historyScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyScript.js'));
 		const historyStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyStyle.css'));
 		const arrowImageUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'arrow.png'));
 		const nonce = getNonce();
 
+		let [userContextContent, projectContextContent] = getContext(this._extensionUri);
 
 		return /*html*/`
 			<!DOCTYPE html>
@@ -259,6 +322,10 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 				<link href="${historyStyleUri}" rel="stylesheet">
+				<script nonce=${nonce}>
+					const userContext = ${JSON.stringify(userContextContent)};
+					const projectContext = ${JSON.stringify(projectContextContent)};
+				</script>
 				<script defer nonce="${nonce}" src="${historyScriptUri}"></script>
 
 				<style>
