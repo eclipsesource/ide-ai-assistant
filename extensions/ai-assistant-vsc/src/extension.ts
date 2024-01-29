@@ -276,8 +276,9 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 					</div>
 
 					<div id="main">
-						<div id="discussions-container">
-							<!-- Discussions and messages will be added here by the script -->
+						<div id="messages-list">
+							<!-- Messages will be added here by the script -->
+							<p id="no-messages">No messages to show</p>
 						</div>
 					
 					</div>
@@ -285,25 +286,17 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 
 				<div id="copy-samples" style="display: none">
 
-				<!-- Sample discussion element to be copied -->
-					<div class="discussion">
-						<div class="discussion-header">
-							<div class="header-container">
+					<!-- Sample message container element to be copied -->
+					<div class="message-container">
+						<div class="content-container">
+							<div class="message-header">
 								<div class="header-arrow"></div>
 								<h5 class="header-title"></h5>
 							</div>
-							<input type="checkbox" class="history-checkbox" />
-						</div>
-						<div class="discussion-body">
-							<p class="placeholder"> Summurazing messages ... </p>
-						</div>
-					</div>
-
-					<!-- Sample message element to be copied -->
-					<div class="message-block">
-						<div class="block-container">
-							<p class="message-element message-request"></p>
-							<p class="message-element message-response"></p>
+							<div class="message-body">
+								<p class="message-element message-request"></p>
+								<p class="message-element message-response"></p>
+							</div>
 						</div>
 						<input type="checkbox" class="history-checkbox" />
 					</div>

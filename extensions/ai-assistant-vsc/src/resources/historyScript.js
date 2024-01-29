@@ -4,20 +4,22 @@ const infoDiv = document.getElementById('info');
 
 var project_name = null;
 var access_token = null;
+var isDarkMode = (getComputedStyle(document.body).getPropertyValue('--vscode-editor-foreground') === "#1f1f1f");
 
 class HistoryManager {
-    discussionsList = [];
+    messagesList = [];
     selected = false;
 
-    async setupHistory() {
-        const discussions = await this.getDiscussions();
-        this.addDiscussions(discussions);
-        
+    constructor() {
+        this.setupEventsListeners();
+    }
+
+    async setupEventsListeners() {
         // Event listener for checkbox
         document.getElementById('header-controls').querySelector('.history-checkbox').addEventListener('click', () => {
             this.selected = !this.selected;
-            this.discussionsList.forEach(discussion => {
-                discussion.setSelection(this.selected);
+            this.messagesList.forEach(message => {
+                message.setSelection(this.selected);
             });
         });
 
@@ -27,30 +29,14 @@ class HistoryManager {
         });
     }
 
-    async getDiscussions() {
-        const encodedProjectName = encodeURIComponent(project_name);
-        const response = await fetch(`${BACKEND_URL}/database/projects/${encodedProjectName}/discussions`);
-        const discussions = await response.json();
-        return discussions;
-    }
-
-    addDiscussions(discussions) {
-        discussions.forEach((discussion, index) => {
-            const discussionElement = new Discussion(discussion, index);
-            this.discussionsList.push(discussionElement);
-        });
-    }
-
     handleSending() {
         // Retreives selected messages.
         const selectedMessages = [];
-        this.discussionsList.forEach(discussion => {
-            discussion.messagesBlockList.forEach(messageBlock => {
-                if (messageBlock.selected) {
-                    selectedMessages.push(messageBlock.message1);
-                    selectedMessages.push(messageBlock.message2);
-                }
-            });
+        this.messagesList.forEach(message => {
+            if (message.selected) {
+                selectedMessages.push(message.message1);
+                selectedMessages.push(message.message2);
+            }
         });
 
         if (selectedMessages.length === 0) {
@@ -62,166 +48,109 @@ class HistoryManager {
         infoDiv.textContent = `${selectedMessages.length} messages would be sent right now.`;
         // TODO
     }
-}
-
-class Discussion {
-    discussionContainer = document.getElementById('discussions-container');
-    darkMode = (getComputedStyle(document.body).getPropertyValue('--vscode-editor-foreground') === "#1f1f1f")
-    messagesBlockList = [];
-    selected = false;
-    placeholder = false;
-
-    constructor(discussion, discussionFrontId) {
-        this.discussion = discussion;
-        this.discussionFrontId = discussionFrontId;
-
-        this.discussionElement = this.setupDiscussion();
-        this.setupMessages();
-    }
-
-    setupDiscussion() {
-        // Set the discussion
-        const newDiscussion = this.createDiscussionDiv();
-        this.discussionContainer.appendChild(newDiscussion);
-        this.handleExpansion(newDiscussion);
-        this.handleSelection(newDiscussion);
-
-        return newDiscussion;
-    }
 
     async setupMessages() {
-        // Set a placeholder message
-        this.discussionContainer.querySelector('.placeholder').style.display = 'block';
+        const bodyPlaceholder = document.getElementById("no-messages");
 
-        // Set messages within the discussion
-        const dbMessages = await this.getMessages(this.discussion._id);
-        const filteredMessages = dbMessages.map((message) => {
-            return { role: message.role, content: message.content };
-        });
+        bodyPlaceholder.textContent = "Fetching and summarizing messages...";
+        let summarizedMessages = [];
 
-        const summarizeRequest = {
-            messages: filteredMessages,
-            access_token: access_token,
-            project_name: project_name,
-          };
+        try {
+            summarizedMessages = await this.summarizeMessages();
 
-        fetch(`${BACKEND_URL}/services/aiAssistantBackend/summarize`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(summarizeRequest),
-        })
-            .then(response => response.json())
-            .then(messages => { 
-                this.addMessagesBlock(messages);
-            });
-    }
-
-    async getMessages(discussionId) {
-        const requestUrl = `${BACKEND_URL}/database/discussions/${discussionId}/messages`;
-        const response = await fetch(requestUrl);
-        const messages = await response.json();
-        return messages;
-    }
-
-    createDiscussionDiv() {
-        const sampleDiv = document.getElementById('copy-samples').querySelector('.discussion');
-        const newDiscussionDiv = sampleDiv.cloneNode(true);
-
-        newDiscussionDiv.id = `discussion-${this.discussionFrontId}`;
-        newDiscussionDiv.querySelector('.header-title').textContent = `DISCUSSION ${this.discussionFrontId + 1}`;
-        this.darkMode && (newDiscussionDiv.querySelector('.header-arrow').classList.add('dark'));
-        (this.discussionFrontId % 2 === 0) && (newDiscussionDiv.classList.add('highlighted'));
-
-        return newDiscussionDiv;
-    }
-
-    handleExpansion(discussionDiv) {
-        const header = discussionDiv.querySelector('.discussion-header');
-        header.addEventListener('click', (event) => {
-            const headerArrow = header.querySelector('.header-arrow');
-            headerArrow.classList.toggle('expanded');
-            const headerBody = discussionDiv.querySelector('.discussion-body');
-            headerBody.classList.toggle('expanded');
-        });
-    }
-
-    handleSelection(discussionDiv) {
-        const checkbox = discussionDiv.querySelector('.history-checkbox');
-        checkbox.addEventListener('click', (event) => {
-            event.stopPropagation();
-            this.setSelection(!this.selected);
-        });
-    }
-
-    setSelection(selection) {
-        const checkbox = this.discussionElement.querySelector(".history-checkbox");
-        checkbox.checked = selection;
-        this.selected = selection;
-        this.messagesBlockList.forEach(messageBlock => {
-            messageBlock.setSelection(this.selected);
-        })
-    }
-
-    addMessagesBlock(messages) {
-        if (messages.length < 2) {
-            // TODO hide the whole discussion (display none) in that case?
-            this.discussionContainer.querySelector('.placeholder').textContent = "No messages in this discussion.";
+            if (summarizedMessages.length < 2) {
+                bodyPlaceholder.textContent = "No messages received";
+                return;
+            }
+        } catch (error) {
+            bodyPlaceholder.textContent = "An error occured while fetching messages: \n" + error;
             return;
         }
-        this.discussionContainer.querySelector('.placeholder').style.display = 'none';
+        bodyPlaceholder.textContent = "";
 
-        const discussionBody = this.discussionElement.querySelector('.discussion-body');
+        const messagesContainer = document.getElementById('messages-list');
         let i = 0;
-        while (i < messages.length - 1) {
-            const message1 = messages[i];
-            const message2 = messages[i + 1];
-    
-            const messageBlockElement = new MessageBlock(discussionBody, message1, message2, i);
-            this.messagesBlockList.push(messageBlockElement);
-            i += 2;
+        while (i*2 + 1 < summarizedMessages.length) {
+            const message1 = summarizedMessages[i*2];
+            const message2 = summarizedMessages[i*2 + 1];
+
+            const messageBlockElement = new MessageBlock(messagesContainer, message1, message2, i);
+            this.messagesList.push(messageBlockElement);
+            i += 1;
         }
+
+    }
+
+    async summarizeMessages() {
+        const encodedProjectName = encodeURIComponent(project_name);
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${access_token}`
+          };
+        const response = await fetch(`${BACKEND_URL}/services/aiAssistantBackend/summarize/${encodedProjectName}`, {
+            method: 'GET',
+            headers: headers,
+        });
+
+        return await response.json();
     }
 }
 
 class MessageBlock {
     selected = false;
 
-    constructor(discussionBody, message1, message2, messageBlockId) {
-        this.discussionBody = discussionBody;
+    constructor(container, message1, message2, messageBlockId) {
+        this.container = container;
         this.message1 = message1;
         this.message2 = message2;
         this.messageBlockId = messageBlockId;
 
-        this.messageBlock = this.setupMessageBlock();
+        this.messageElement = this.setupMessageBlock();
     }
 
     setupMessageBlock() {
         const newMessageBlock = this.createMessageBlockDiv();
-        this.discussionBody.appendChild(newMessageBlock);
+        this.container.appendChild(newMessageBlock);
+
+        this.handleExpansion(newMessageBlock);
+        this.handleEvents(newMessageBlock);
         return newMessageBlock;
     }
 
     createMessageBlockDiv() {
-        const sampleDiv = document.getElementById('copy-samples').querySelector('.message-block');
+        const sampleDiv = document.getElementById('copy-samples').querySelector('.message-container');
         const newMessageBlockDiv = sampleDiv.cloneNode(true);
         
         newMessageBlockDiv.id = `message-${this.messageBlockId}`;
+        isDarkMode && (newMessageBlockDiv.querySelector('.header-arrow').classList.add('dark'));
+        (this.messageBlockId % 2 === 0) && (newMessageBlockDiv.classList.add('highlighted'));
+        newMessageBlockDiv.querySelector(".header-title").textContent = `Question ${this.messageBlockId + 1}`;
         newMessageBlockDiv.querySelector('.message-request').innerHTML = `<strong>Question:</strong> ${this.message1.content}`;
-        newMessageBlockDiv.querySelector('.message-request').id = this.message1._id;
         newMessageBlockDiv.querySelector('.message-response').innerHTML = `<strong>Response:</strong> ${this.message2.content}`;
-        newMessageBlockDiv.querySelector('.message-response').id = this.message2._id;
-        newMessageBlockDiv.addEventListener('click', () => {
-            this.setSelection(!this.selected);
-        });
-
+        
         return newMessageBlockDiv;
     }
 
+    handleExpansion(messageElement) {
+        const header = messageElement.querySelector('.message-header');
+        header.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const headerArrow = header.querySelector('.header-arrow');
+            headerArrow.classList.toggle('expanded');
+            const blockBody = this.messageElement.querySelector('.message-body');
+            blockBody.classList.toggle('expanded');
+        });
+    }
+
+    handleEvents(messageElement) {
+        messageElement.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.setSelection(!this.selected);
+        });
+    }
+
     setSelection(selection) {
-        const checkbox = this.messageBlock.querySelector('.history-checkbox');
+        const checkbox = this.messageElement.querySelector('.history-checkbox');
         checkbox.checked = selection;
         this.selected = selection;
     }
@@ -241,7 +170,7 @@ function main() {
     const _historyManager = new HistoryManager();
     let intervalId = setInterval(() => {
         if (access_token !== null && project_name !== null) {
-            _historyManager.setupHistory();
+            _historyManager.setupMessages();
             clearInterval(intervalId);
         } else {
             vscode.postMessage({ command: "get-variables" });

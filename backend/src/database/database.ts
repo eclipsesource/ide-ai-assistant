@@ -112,9 +112,9 @@ export class MongoDB implements Database {
     }
 
     const testDiscussion = await discussionService.createDiscussion(testUser, defaultProject);
-    messageService.createMessage(testDiscussion, "user", "test message", null, null);
-    messageService.createMessage(testDiscussion, "assistant", "test response", null, null);
-    messageService.createMessage(testDiscussion, "user", "test request 2", null, null);
-    messageService.createMessage(testDiscussion, "assistant", "test response 2", null, null);
+    messageService.createMessage(testDiscussion, "user", "test message", null);
+    messageService.createMessage(testDiscussion, "assistant", "test response", null);
+    messageService.createMessage(testDiscussion, "user", "test request 2", null);
+    messageService.createMessage(testDiscussion, "assistant", "test response 2", null);
   }
 }

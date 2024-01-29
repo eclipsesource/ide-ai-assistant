@@ -2,7 +2,7 @@
     {
         "login": "mathis-girault",
         "role": "admin",
-        "projectLeads": []
+        "projectLeads": ["@theia/monorepo"]
     },
     {
         "login": "test",

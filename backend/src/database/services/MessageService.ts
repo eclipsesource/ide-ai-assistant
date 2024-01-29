@@ -6,7 +6,6 @@ export class MessageService {
         role: string,
         content: string,
         rating: number | null,
-        feedback: string | null
     ): Promise<MessageType> {
 
         const newMessage = new Message({
@@ -14,7 +13,6 @@ export class MessageService {
             role: role,
             content: content,
             rating: rating,
-            feedback: feedback,
         });
         const savedMessage = await newMessage.save() as MessageType;
         return savedMessage;
@@ -40,17 +38,18 @@ export class MessageService {
         return messages;
     }
 
-    public async getMessagesByproject_name(project: ProjectType): Promise<MessageType[]> {
-        const discussions = await Discussion.find({ projectId: project._id });
-    
-        // Find messages related to the discussions
-        const messages = await Message.find({ discussionId: { $in: discussions } });
-    
+    public async getAllMessages(): Promise<MessageType[]> {
+        const messages = await Message.find();
         return messages;
     }
 
-    public async getAllMessages(): Promise<MessageType[]> {
-        const messages = await Message.find();
+    public async getAllMessagesByProject(project: ProjectType): Promise<MessageType[]> {
+        const messages = [];
+        const discussions = await Discussion.find({ projectId: project });
+        for (const discussion of discussions) {
+            const discussionMessages = await Message.find({ discussionId: discussion });
+            messages.push(...discussionMessages);
+        }
         return messages;
     }
 

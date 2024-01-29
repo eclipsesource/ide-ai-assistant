@@ -19,7 +19,7 @@ class ChatApp {
     this.contexts = { user: userContext, project: projectContext };
 
     // Retrieve messages from the state
-    // vscode.setState({ access_token: vscode.getState().access_token }); // To uncomment if needed to reset 
+    vscode.setState({ access_token: vscode.getState().access_token }); // To uncomment if needed to reset messages
     this.loadMessages();
 
     // Set variables to pass them to the other panel.
@@ -180,6 +180,8 @@ class ChatApp {
     if (this.displayLoading) {
       this.messagesContainer.appendChild(loaderElement);
     }
+    document.getElementById("send").style.backgroundColor = "#1c401c";
+    document.getElementById("send").style.color = "black";
   }
 
   removeLoader() {
@@ -188,6 +190,8 @@ class ChatApp {
     if (loader) {
       loader.remove();
     }
+    document.getElementById("send").style.backgroundColor = "#4caf50";
+    document.getElementById("send").style.color = "white";
   }
 
   async handleSendMessage() {
@@ -195,6 +199,9 @@ class ChatApp {
 
     if (inputValue.trim() === "") {
       return; // Don't process empty messages
+    }
+    if (this.displayLoading) {
+      return; // Don't process messages while receiving a response
     }
 
     // Send the user question throught vscode so it will be displayed
@@ -308,6 +315,7 @@ class ChatApp {
         body: JSON.stringify(request),
         headers: {
           "Content-type": "application/json; charset=UTF-8",
+          "Authorization": `Bearer ${this.access_token}`,
         },
       });
     } catch (error) {
