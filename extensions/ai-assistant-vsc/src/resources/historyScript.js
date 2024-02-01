@@ -49,6 +49,34 @@ class HistoryManager {
         // TODO
     }
 
+    async handleConnection() {
+        const mainDiv = document.getElementById("container");
+        const encodedProjectName = encodeURIComponent(project_name);
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${access_token}`
+        };
+
+        fetch(`${BACKEND_URL}/database/isProjectLead/${encodedProjectName}`, {
+            method: 'GET',
+            headers: headers,
+        })
+        .then(async response => {
+            if (!response.ok) {
+                const err = await response.json();
+                throw err.error;
+            }
+            return response.json();
+        }).then(() => {
+            mainDiv.style.display = "flex";
+            this.setupMessages();
+        }).catch((error) => {
+            mainDiv.style.display = "block";
+            mainDiv.innerHTML = `<p> An error occured while fetching messages: \n ${error} </p>`;
+            return;
+        })
+    }
+
     async setupMessages() {
         const bodyPlaceholder = document.getElementById("no-messages");
 
@@ -156,6 +184,7 @@ class MessageBlock {
     }
 }
 
+// This is how we retreive from the extension the project name and the access token.
 window.addEventListener("message", (event) => {
     const message = event.data;
     switch (message.command) {
@@ -170,7 +199,7 @@ function main() {
     const _historyManager = new HistoryManager();
     let intervalId = setInterval(() => {
         if (access_token !== null && project_name !== null) {
-            _historyManager.setupMessages();
+            _historyManager.handleConnection();
             clearInterval(intervalId);
         } else {
             vscode.postMessage({ command: "get-variables" });

@@ -41,9 +41,11 @@ class GitHubOAuth {
     }
 
     async verifyToken(access_token) {
-        const verifyUrl = `${GITHUB_BACKEND_URL}/validate-token/${access_token}`;
-        return fetch(verifyUrl)
-            .then(response => response.json())
+        const headers = { 'Authorization': `Bearer ${access_token}` };
+        return fetch(`${GITHUB_BACKEND_URL}/validate-token`, {
+            method: 'GET',
+            headers: headers,
+        }).then(response => response.json())
             .then(data => {
                 return data.success;
             })

@@ -28,12 +28,11 @@ export class GithubOauthController {
       return res.status(200).json({ success: true, access_token: access_token });
   }
 
-  @httpGet("/validate-token/:token")
+  @httpGet("/validate-token/")
   async validateToken(req: Request, res: Response) {
     // No caching because token validity is time dependent
     res.set('Cache-Control', 'no-store');
-
-    const { token } = req.params;
+    const token = req.headers.authorization || "";
 
     // Validate the token
     const isValid = await this.oAuthService.validateToken(token);

@@ -121,6 +121,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 		const chatStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatStyle.css'));
 		const nonce = getNonce();
 
+		// TODO move context generation into this file ?
 		// Manage context files
 		// const projectFile = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 		// console.log(projectFile)
@@ -267,7 +268,10 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 				<div id="container">
 					<div id="header">
 						<h3 id="history-title">Messages History</h3>
-						<p id="history-explanation">[Insert some explanation here]<p>
+						<p id="history-explanation">This interface is designed for the project leads.
+						You will have the ability to review a summary of messages sent by developpers on current project.
+						You have the option to ask the AI to modify the README file of the project, based on those messages.
+						You can choose to either send all messages or pick a selection. <p>
 						<div id="header-controls">
 							<input type="button" id="send-messages" value="Send" />
 							<input type="checkbox" class="history-checkbox" />
