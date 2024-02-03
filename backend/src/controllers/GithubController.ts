@@ -9,8 +9,8 @@ export class GithubController {
   @inject(GithubService) private githubService: GithubService;
   @httpPost("/issue")
   async fetchGithubIssue(req: Request , res: Response) {
-    const { access_token, issue } = req.body
-    const response = await this.githubService.getGitHubIssue(access_token, issue);
+    const { accessToken, issue } = req.body;
+    const response = await this.githubService.getGitHubIssue(accessToken, issue);
     return res.status(200).json({ success: true, issue: response });
   }
 }
