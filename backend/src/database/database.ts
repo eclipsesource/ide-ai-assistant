@@ -76,13 +76,13 @@ export class MongoDB implements Database {
     }
 
     try {
-      await Promise.all(this.users.map(async ({ login, role, projectLeads }) => {
+      for (const { login, role, projectLeads } of this.users) {
 
         const user = await userService.createUser(login, role);
 
         if (projectLeads) {
           // Instantiate projects leads
-          await Promise.all(projectLeads.map(async (project_name) => {
+         await Promise.all(projectLeads.map(async (project_name) => {
             let project = await projectService.getProjectByName(project_name);
             if (!project) {
               project = await projectService.createProject(project_name);
@@ -91,7 +91,7 @@ export class MongoDB implements Database {
             projectService.addProjectLead(project, user);
           }));
         }
-      }));
+      };
 
       this.logger.info('Data instantiation completed.');
     } catch (error) {
