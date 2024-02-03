@@ -9,20 +9,21 @@ export abstract class AbstractContextReader {
    * Path to the user and project context files.
    */
   protected readonly USER_CONTEXT_FILE: string = path.join(__dirname, 'user_context.txt');
-  protected readonly PROJECT_CONTEXT_FILE: string = path.join(__dirname, 'project_context.txt');
+  protected readonly PROJECT_CONTEXT_FILE: string = path.join(`${__dirname}/../../src/context`, 'project_context.txt');
 
   /**
    * Generates user and project contexts and writes them to files.
    * @returns A promise that resolves to true if the generation was successful, otherwise false.
    */
-  generateContexts(): Promise<boolean> {
+  generateContexts(root: string): Promise<boolean> {
     try {
-      const projectContext = this.getProjectContext();
+      const projectContext = this.getProjectContext().join('\n');
       const userContext = this.getUserContext();
+      const directoryStructure = "\nThe directory structure is as follows.\n" + this.getDirectoryStructure(root, 0, 3);
 
       // Write user and project contexts to files
       fs.writeFileSync(this.USER_CONTEXT_FILE, userContext.join('\n'));
-      fs.writeFileSync(this.PROJECT_CONTEXT_FILE, projectContext.join('\n'));
+      fs.writeFileSync(this.PROJECT_CONTEXT_FILE, projectContext + directoryStructure);
 
       return Promise.resolve(this.filesExist());
     } catch (error: any) {
@@ -79,4 +80,6 @@ export abstract class AbstractContextReader {
    * @returns An array of strings representing user context.
    */
   abstract getUserContext(): string[];
+
+  abstract getDirectoryStructure(directoryPath: string, depth: number, maxDepth: number): string;
 }

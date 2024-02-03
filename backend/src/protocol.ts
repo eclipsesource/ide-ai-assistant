@@ -16,6 +16,22 @@ export class Message {
     content: string | null;
 };
 
+export class MessageTools extends Message {
+    @IsOptional()
+    tool_calls?: Tool[];
+}
+
+export class Tool {
+    id: string
+    type: string
+    function: Function
+}
+
+export class Function {
+    name: string
+    arguments: any
+}
+
 export class MessageRequest {
     @IsArray()
     @ArrayMinSize(1)
@@ -38,8 +54,14 @@ export class MessageRequest {
 }
 
 export type MessageResponse = {
-    content: Message,
+    content: MessageTools,
 };
+
+export type GitHubIssueRequest = {
+    ownerName: string
+    repoName: string
+    issueNumber: number
+}
 
 //OpenAI Backend Service
 export const AIAssistantBackendService = Symbol('AIAssistantBackendService');
@@ -54,4 +76,8 @@ export interface AIAssistantBackendService {
 export interface OAuthService {
     getAccessToken(user_code: string): Promise<string>;
     getUserLogin(accessToken: string): Promise<string>;
+}
+
+export interface GithubService {
+    getGitHubIssue(accessToken: string, issue: GitHubIssueRequest): Promise<any>;
 }

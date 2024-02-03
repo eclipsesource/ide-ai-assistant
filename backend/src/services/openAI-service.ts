@@ -10,6 +10,7 @@ import { injectable } from 'inversify';
 import { OpenAI } from "openai";
 import { BadRequestException, BaseException } from '../config';
 import { AIAssistantBackendService, Message, MessageRequest, MessageResponse } from '../protocol';
+import { ChatCompletionTool } from 'openai/resources/';
 
 
 @injectable()
@@ -66,9 +67,58 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
     }
 
     private async getAnswerFromOpenAI(messages: Message[]): Promise<Message> {
+        const tools: ChatCompletionTool[] = [
+            {
+                type: "function",
+                function: {
+                    name: "openFile",
+                    description: "Open a file from relative path",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            fileName: {
+                                type: "string",
+                                description: "Name of the relevant file"
+                            },
+                            filePath: {
+                                type: "string",
+                                description: "Relative path of the file from root"
+                            },
+                        },
+                        required: ["fileName", "filePath"]
+                    }
+                }
+            }, {
+                type: "function",
+                function: {
+                    name: "getGithubIssue",
+                    description: "Send github issue number",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            issueNumber: {
+                                type: "integer",
+                                description: "Github issue number"
+                            },
+                            issueDescription: {
+                                type: "string",
+                                description: "Explanation of the issue"
+                            },
+                            issueSolution: {
+                                type: "string",
+                                description: "Relevant information or code to solve the issue"
+                            }
+                        },
+                        required: ["issueNumber"]
+                    }
+                }
+            }
+        ];
         const chatCompletion = await this.openai.chat.completions.create({
             messages: messages,
             model: process.env.OPENAI_MODEL ? process.env.OPENAI_MODEL : "gpt-3.5-turbo",
+            tools: tools,
+            tool_choice: 'auto'
         }).catch((e) => {
             throw new BaseException(e.error.type, e.status, e.error.message);
         });
@@ -90,6 +140,9 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
         This command should be given in a code snippet.
         If multiple commands are needed you should give them in one code snippet on one line, and separate each command with a space then a semicolon.
         If you decide to give commands you should start the message by saying to the user that you have pasted commands in the terminal, and the user should review and execute them.
+        If a user wants to open a file, use the directory structure of the project mentioned in the context to send the path of the file.
+        If the user mentions a github issue, use function calling to return the issue number. 
+        If given the issue description, explain the issue and give code with explanation to solve the issue in the getGithubIssue function in issueDescription and issueSolution parameters. Also include relevant file and its path in the openFile function.
         `;
 
         if (request.userContext) {

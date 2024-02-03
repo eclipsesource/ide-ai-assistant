@@ -31,12 +31,14 @@ export class AIAssistantController {
       this.databaseService.messageService.createMessage(discussion, "user", messageText, null);
       
       const response = await this.aiAssistant.getAnswer(req.body);
-      if (response.content.content === null) {
+      if (response.content.tool_calls === null && response.content.content === null) {
         throw new Error("The response from the backend service is null");
       }
+
+      const tool = response.content.tool_calls && response.content.tool_calls[0].function.name;
       
       // Add backend response message to database
-      const APIMessage = await this.databaseService.messageService.createMessage(discussion, "assistant", response.content.content, null);
+      const APIMessage = await this.databaseService.messageService.createMessage(discussion, "assistant", response.content.content || tool || '', null);
       
       return res.json({ ...response, messageId: APIMessage._id.toString() });
   }
