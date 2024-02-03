@@ -1,0 +1,125 @@
+body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+#container {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#header {
+  margin-bottom: 5px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+#history-title, #history-explanation {
+  margin: 5px 0px 5px 0px;
+}
+
+#header-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 5px;
+}
+
+#send-messages {
+  margin-right: 10px;
+  background-color: var(--vscode-editor-wordHighlightBackground);
+  color: var(--vscode-editor-foreground);
+}
+
+#main {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+/* =============================================================
+                    For the message list 
+============================================================= */
+
+.message-container.highlighted {
+  background-color: var(--vscode-editor-background);
+}
+
+.message-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px;
+  margin: 0;
+  user-select: none;
+}
+
+.content-container {
+  flex-grow: 1;
+}
+
+.message-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.message-container:hover {
+  background-color: var(--vscode-editor-hoverHighlightBackground);
+  cursor: pointer;
+}
+
+.header-title {
+  margin: 0px;
+  margin-left: 2px;
+  color: var(--vscode-editor-foreground);
+}
+
+.header-arrow {
+  background: var(--arrow-image);
+  filter: invert(20%);
+  width: 15px;
+  height: 15px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+.header-arrow.dark {
+  filter: invert(90%);
+}
+
+.header-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.message-body {
+  display: none;
+}
+
+.message-body.expanded {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: space-between;
+  padding: 5px 5px 5px 0px;
+  margin-bottom: 5px;
+}
+
+.message-element {
+  margin: 0px;
+  color: var(--vscode-editor-foreground);
+}
+
+.message-request {
+  margin-bottom: 4px;
+}
+
+.history-checkbox:focus, #send-messages:focus {
+  outline: none;
+}

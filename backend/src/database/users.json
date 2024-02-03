@@ -2,11 +2,11 @@
     {
         "login": "mathis-girault",
         "role": "admin",
-        "projectLeads": []
+        "projectLeads": ["@theia/monorepo"]
     },
     {
         "login": "test",
         "role": "user",
-        "projectLeads": ["sampleProject"]
+        "projectLeads": ["@theia/monorepo"]
     }
 ]

@@ -34,7 +34,7 @@ export class MessageRequest {
     access_token: string;
 
     @IsString()
-    projectName: string;
+    project_name: string;
 }
 
 export type MessageResponse = {
@@ -48,6 +48,7 @@ export const AIASSISTANTSERVICE_BACKEND_PATH = '/services/aiAssistantBackend';
 
 export interface AIAssistantBackendService {
     getAnswer(question: MessageRequest): Promise<MessageResponse>
+    summarizeMessages(messages: MessageRequest): Promise<Message[]>
 }
 
 export interface OAuthService {

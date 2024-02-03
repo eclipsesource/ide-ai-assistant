@@ -43,6 +43,5 @@ export default class GithubOAuthService implements OAuthService {
 
     throw new Error('No github login is associated with given access token');
   }
-
 }
 

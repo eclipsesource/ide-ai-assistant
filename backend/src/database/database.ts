@@ -3,7 +3,7 @@ import { Logger } from "../config";
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import fs from 'fs';
 import path from 'path';
-import { UserService, ProjectService } from './services';
+import { UserService, ProjectService, DiscussionService, MessageService } from './services';
 
 export const Database = Symbol('Database');
 
@@ -44,6 +44,7 @@ export class MongoDB implements Database {
 
     // Populate with users data
     await this.initializeDb();
+    await this.samplePopulate();
   }
 
   async close() {
@@ -75,26 +76,45 @@ export class MongoDB implements Database {
     }
 
     try {
-      await Promise.all(this.users.map(async ({ login, role, projectLeads }) => {
+      for (const { login, role, projectLeads } of this.users) {
 
         const user = await userService.createUser(login, role);
 
         if (projectLeads) {
           // Instantiate projects leads
-          await Promise.all(projectLeads.map(async (projectName) => {
-            let project = await projectService.getProjectByName(projectName);
+         await Promise.all(projectLeads.map(async (project_name) => {
+            let project = await projectService.getProjectByName(project_name);
             if (!project) {
-              project = await projectService.createProject(projectName);
+              project = await projectService.createProject(project_name);
             }
 
             projectService.addProjectLead(project, user);
           }));
         }
-      }));
+      };
 
       this.logger.info('Data instantiation completed.');
     } catch (error) {
       this.logger.error(`Error during data instantiation: ${error}`);
     }
   };
+
+  async samplePopulate() {
+    const userService = new UserService();
+    const projectService = new ProjectService();
+    const discussionService = new DiscussionService();
+    const messageService = new MessageService();
+
+    const testUser = await userService.getUserByLogin("test");
+    const defaultProject = await projectService.getProjectByName("@theia/monorepo");
+    if (!testUser || !defaultProject) {
+      throw new Error("User or project test not found");
+    }
+
+    const testDiscussion = await discussionService.createDiscussion(testUser, defaultProject);
+    messageService.createMessage(testDiscussion, "user", "test message", null);
+    messageService.createMessage(testDiscussion, "assistant", "test response", null);
+    messageService.createMessage(testDiscussion, "user", "test request 2", null);
+    messageService.createMessage(testDiscussion, "assistant", "test response 2", null);
+  }
 }

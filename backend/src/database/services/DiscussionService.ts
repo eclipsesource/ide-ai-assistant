@@ -23,6 +23,11 @@ export class DiscussionService {
         return discussion;
     }
 
+    public async getDiscussionByProject(project: ProjectType): Promise<DiscussionType[]> {
+        const discussions = await Discussion.find({ projectId: project });
+        return discussions;
+    }
+
     public async deleteDiscussion(discussionId: string): Promise<boolean> {
         const result = await Discussion.findByIdAndDelete(discussionId);
         return !!result;

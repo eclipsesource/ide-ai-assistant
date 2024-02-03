@@ -8,7 +8,6 @@ interface MessageType extends Document {
     content: string;
     date: Date;
     rating?: number;
-    feedback?: string;
 }
 
 const MessageSchema = new Schema({
@@ -32,9 +31,6 @@ const MessageSchema = new Schema({
     },
     rating: {
         type: Number,
-    },
-    feedback: {
-        type: String,
     },
 });
 

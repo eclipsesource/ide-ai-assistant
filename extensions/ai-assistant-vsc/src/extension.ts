@@ -8,13 +8,15 @@ interface ErrorObject {
 }
 import { activateTheia } from './theia';
 
-const THEIA_APP_NAME = 'Theia Browser Example';
+const THEIA_APP_NAME = 'Eclipse Theia'; // 'Theia Browser Example';
 
 // This method is called when your extension is activated
 export const activate = async (context: vscode.ExtensionContext) => {
 
 	const provider = new AIAssistantProvider(context.extensionUri, context);
+	const historyProvider = new AIAssistantHistoryProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantProvider.viewType, provider));
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider(AIAssistantHistoryProvider.viewType, historyProvider));
 
 	if (vscode.env.appName === THEIA_APP_NAME) {
 		await activateTheia(THEIA_APP_NAME, context, provider);
@@ -95,8 +97,12 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 					case 'openExternal':
 						vscode.env.openExternal(vscode.Uri.parse(message.url));
 						return;
-					case 'test':
+					case 'info':
 						vscode.window.showInformationMessage(message.text);
+						return;
+					case 'set-variables':
+						this._context.globalState.update('access_token', message.access_token);
+						this._context.globalState.update('project_name', message.project_name);
 						return;
 				}
 			},
@@ -115,6 +121,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 		const chatStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatStyle.css'));
 		const nonce = getNonce();
 
+		// TODO move context generation into this file ?
 		// Manage context files
 		// const projectFile = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 		// console.log(projectFile)
@@ -171,13 +178,135 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 				</div>
 			
 				<script nonce=${nonce}>
-					const userContext = ${JSON.stringify(userContextContent)}
-					const projectContext = ${JSON.stringify(projectContextContent)}
+					const isTheia = ${vscode.env.appName === THEIA_APP_NAME};
+					const userContext = ${JSON.stringify(userContextContent)};
+					const projectContext = ${JSON.stringify(projectContextContent)};
 				</script>
 
 				<script nonce="${nonce}" src="${chatScriptUri}"></script>
 				<script nonce="${nonce}" src="${loginScriptUri}"></script>
 				
+			</body>
+			</html>
+		`;
+	}
+}
+
+export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
+	public static readonly viewType = 'ai-assistant-vsc.historyView';
+	private _view?: vscode.WebviewView;
+	private _context: vscode.ExtensionContext;
+
+	constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+		this._context = context;
+	}
+
+	public async SendErrorNotification(message: ErrorObject) {
+		showErrorNotification(message, this._view!);
+	}
+
+	public resolveWebviewView(
+		webviewView: vscode.WebviewView,
+		_context: vscode.WebviewViewResolveContext,
+		_token: vscode.CancellationToken,
+	) {
+		this._view = webviewView;
+		webviewView.webview.options = {
+			// Allow scripts in the webview
+			enableScripts: true,
+			localResourceRoots: [
+				this._extensionUri,
+				vscode.Uri.parse('http://localhost:3001')
+			]
+		};
+		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+		webviewView.webview.onDidReceiveMessage(
+			message => {
+				switch (message.command) {
+					case 'message':
+						vscode.window.showInformationMessage(message.text);
+						return;
+					case 'get-variables':
+						vscode.window.showInformationMessage(message);
+						webviewView.webview.postMessage({ command: 'get-variables', access_token: this._context.globalState.get('access_token'), project_name: this._context.globalState.get('project_name') });
+						return;
+				}
+			},
+			undefined,
+			this._context.subscriptions
+		);
+	}
+
+	private _getHtmlForWebview(webview: vscode.Webview) {
+		const historyScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyScript.js'));
+		const historyStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'historyStyle.css'));
+		const arrowImageUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'arrow.png'));
+		const nonce = getNonce();
+
+
+		return /*html*/`
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+				<link href="${historyStyleUri}" rel="stylesheet">
+				<script defer nonce="${nonce}" src="${historyScriptUri}"></script>
+
+				<style>
+					:root {
+						--arrow-image: url('${arrowImageUri}');
+					}
+				</style>
+				<title>Messages history</title>
+			</head>
+			<body>
+
+				<div id="container">
+					<div id="header">
+						<h3 id="history-title">Messages History</h3>
+						<p id="history-explanation">This interface is designed for the project leads.
+						You will have the ability to review a summary of messages sent by developpers on current project.
+						You have the option to ask the AI to modify the README file of the project, based on those messages.
+						You can choose to either send all messages or pick a selection. <p>
+						<div id="header-controls">
+							<input type="button" id="send-messages" value="Send" />
+							<input type="checkbox" class="history-checkbox" />
+						</div>
+						<div id="info"></div>
+					</div>
+
+					<div id="main">
+						<div id="messages-list">
+							<!-- Messages will be added here by the script -->
+							<p id="no-messages">No messages to show</p>
+						</div>
+					
+					</div>
+				</div>
+
+				<div id="copy-samples" style="display: none">
+
+					<!-- Sample message container element to be copied -->
+					<div class="message-container">
+						<div class="content-container">
+							<div class="message-header">
+								<div class="header-arrow"></div>
+								<h5 class="header-title"></h5>
+							</div>
+							<div class="message-body">
+								<p class="message-element message-request"></p>
+								<p class="message-element message-response"></p>
+							</div>
+						</div>
+						<input type="checkbox" class="history-checkbox" />
+					</div>
+				</div>
+
+
 			</body>
 			</html>
 		`;
