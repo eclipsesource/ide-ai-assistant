@@ -37,8 +37,7 @@ describe("Create the App with controllers and check that we get a response", () 
 
   const fakeOAuthService: OAuthService = {
     getUserLogin: jest.fn((_) => Promise.resolve("test")),
-    getAccessToken: jest.fn((_) => Promise.resolve("test")),
-    validateToken: jest.fn((_) => Promise.resolve(true)),
+    getAccessToken: jest.fn((_) => Promise.resolve("test"))
   };
 
   beforeAll(async () => {

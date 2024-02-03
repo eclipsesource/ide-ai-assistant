@@ -43,19 +43,5 @@ export default class GithubOAuthService implements OAuthService {
 
     throw new Error('No github login is associated with given access token');
   }
-
-  async validateToken(token: string): Promise<boolean> {
-    const octokit = new Octokit({
-      auth: token,
-    });
-
-    try {
-      await octokit.rest.users.getAuthenticated();
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
 }
 

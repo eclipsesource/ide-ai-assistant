@@ -35,8 +35,15 @@ export class GithubOauthController {
     const token = req.headers.authorization || "";
 
     // Validate the token
-    const isValid = await this.oAuthService.validateToken(token);
-
-    return res.status(isValid ? 200: 400).json({ success: isValid });
+    try {
+      const user_login = await this.oAuthService.getUserLogin(token);
+      const user = await this.databaseService.userService.getUserByLogin(user_login);
+      if (user === null) {
+        throw new Error('No user found');
+      }
+    } catch {
+      return res.status(400).json({ success: false });
+    }
+    return res.status(200).json({ success: true });
   }
 }
