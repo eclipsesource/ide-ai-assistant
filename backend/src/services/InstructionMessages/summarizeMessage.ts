@@ -8,6 +8,8 @@ Please return a JSON object containing the summarized messages following the for
 [{content: "message 1 request goes here", role: "user"}, {content: "message 1 response goes here", role: "assistant"}, ...]
 The role should either be 'user' for the questions or 'assistant' for the responses.
 You need to send the messages only by pairs, with one question and one answer. It's necessary.
+Try to keep the user messages in form of questions.
+Try to keep code snippets and technical solutions provided by the AI Assistant answers, if they are relevant.
 
 What is asked of you is to summarize the potentially long list of messages.
 You are free to summarize as much as possible while keeping structure and sense for a project lead.
