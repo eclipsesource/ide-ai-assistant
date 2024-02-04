@@ -60,9 +60,8 @@ class HistoryManager {
             messages: messages,
             projectContext: this.contexts.project,
             userContext: this.contexts.user,
-            // TODO: May need to add token for authentication
-            // access_token: this.access_token,
-            projectName: this.projectName,
+            access_token: access_token,
+            project_name: project_name,
         };
         
         vscode.postMessage({ command: 'generateReadME', request: request});
