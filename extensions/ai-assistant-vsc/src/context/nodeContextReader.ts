@@ -1,6 +1,7 @@
 import * as os from 'os';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { AbstractContextReader } from './abstractContextReader';
 
 /**
@@ -78,4 +79,36 @@ export class NodeContextReader extends AbstractContextReader {
 
     return userContext;
   }
+
+  getDirectoryStructure(directoryPath: string, depth: number, maxDepth: number): string {
+    if (depth > maxDepth) {
+      return ''; // Stop recursion if depth exceeds max depth
+    }
+    let result = '';
+    const files = fs.readdirSync(directoryPath);
+
+    for (const file of files) {
+      const filePath = path.join(directoryPath, file);
+      const stats = fs.statSync(filePath);
+      if (stats.isDirectory()) {
+        // It's a directory, so recurse into it
+        if (!this.skipFile(file)) {
+          result += `${'  '.repeat(depth)} ${file}/\n`;
+          result += this.getDirectoryStructure(filePath, depth + 1, maxDepth);
+        }
+      } else {
+        // It's a file
+        if (depth <= maxDepth) {
+          result += `${'  '.repeat(depth)} ${file}\n`;
+        }
+      }
+    }
+    return result;
+  }
+
+  private skipFile(fileName: string): boolean {
+    const dirs = ['node_modules', 'lib', 'out', 'src-gen'];
+    return fileName.startsWith('.') || dirs.includes(fileName);
+  }
+
 }

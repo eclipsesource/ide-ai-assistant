@@ -19,11 +19,11 @@ class ChatApp {
     this.contexts = { user: userContext, project: projectContext };
 
     // Retrieve messages from the state
-    vscode.setState({ access_token: vscode.getState().access_token }); // To uncomment if needed to reset messages
+    vscode.setState({ access_token: vscode.getState()?.access_token || this.access_token }); // To uncomment if needed to reset messages
     this.loadMessages();
 
     // Set variables to pass them to the other panel.
-    vscode.postMessage({ command: "set-variables", access_token: this.access_token, project_name: this.project_name});
+    vscode.postMessage({ command: "set-variables", access_token: this.access_token, project_name: this.project_name });
   }
 
   loadMessages() {
@@ -234,6 +234,7 @@ class ChatApp {
     const command = debug ? "debug-command" : "message";
     let APIResponse;
     let messageId = 0;
+    let displayResponse = true;
 
     try {
       const response = await fetch(this.endpoint, {
@@ -254,7 +255,7 @@ class ChatApp {
       // Check if the response is valid
       if (
         !json.content ||
-        !json.content.content ||
+        (!json.content.content && !json.content.tool_calls) ||
         json.content.role !== "assistant" ||
         !json.messageId
       ) {
@@ -265,16 +266,87 @@ class ChatApp {
 
       APIResponse = json.content.content;
       messageId = json.messageId;
+
+      const funcs = json.content.tool_calls;
+      // Handle function calling
+      if (funcs) {
+        APIResponse = '';
+        for (const f of funcs) {
+          switch (f.function.name) {
+            case 'openFile':
+              const file = this.getFilePath(f);
+              APIResponse += `The file needed for the issue specified is <a onClick="openFile('${file.name}', '${file.path}')"> ${file.name || file.path}</a>.\n`;
+              break;
+            case 'getGithubIssue':
+              const issue = this.getIssueDetails(f);
+              if (!issue.issueSolution) {
+                this.getGithubIssue(issue.issueNumber);
+                displayResponse = false;
+              } else {
+                APIResponse += '\n' + issue.issueDescription + '\n\n' + issue.issueSolution + '\n';
+              }
+              break;
+          }
+        }
+      }
+
     } catch (error) {
       APIResponse = `An error occured.\n ${error}`;
     }
 
-    // Display the answer in the chat window
-    vscode.postMessage({
-      command: command,
-      text: APIResponse,
-      messageId: messageId,
-    });
+    if (displayResponse) {
+      // Display the answer in the chat window
+      vscode.postMessage({
+        command: command,
+        text: APIResponse,
+        messageId: messageId
+      });
+    }
+  }
+
+  getFilePath(tool_call) {
+    const file = JSON.parse(tool_call.function.arguments);
+    return {
+      path: file.filePath,
+      name: file.fileName,
+    }
+  }
+
+  getIssueDetails(tool_call) {
+    const issue = JSON.parse(tool_call.function.arguments);
+    return {
+      issueNumber: issue.issueNumber,
+      issueDescription: issue.issueDescription,
+      issueSolution: issue.issueSolution
+    }
+  }
+
+  async getGithubIssue(issueNumber) {
+    // TODO: Remove hardcoding
+    const issue = {
+      ownerName: "eclipse-theia",
+      repoName: "theia",
+      issueNumber: issueNumber
+    }
+    const request = { accessToken: this.access_token, issue: issue }
+    const endpoint = BACKEND_URL + '/github/issue';
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        }
+      });
+      const json = await response.json();
+      let newMessage = `The issue is titled ${json.issue.repository.issue.title}. `
+      newMessage += `This is the issue description. Explain the issue and give code with explanation to solve the issue. ${json.issue.repository.issue.body}`;
+      this.allMessages.push({ role: 'user', text: newMessage });
+      this.getAPIResponse();
+
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   handleReceivedMessage(event) {
@@ -328,4 +400,11 @@ class ChatApp {
     currentState.messages = this.allMessages;
     vscode.setState(currentState);
   }
+}
+
+async function openFile(name, path) {
+  vscode.postMessage({
+    command: 'open-file',
+    url: path.endsWith(name) ? path : path + "\\" + name
+  });
 }

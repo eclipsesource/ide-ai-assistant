@@ -176,3 +176,7 @@ html, body {
 .rating > label:hover ~ input:checked ~ label {
   color: #c59b08;
 }
+
+a {
+  cursor: pointer;
+}

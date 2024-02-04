@@ -7,6 +7,8 @@ interface ErrorObject {
 	errorMsg: string;
 }
 import { activateTheia } from './theia';
+import { NodeContextReader } from './context/nodeContextReader';
+import path = require('path');
 
 const THEIA_APP_NAME = 'Eclipse Theia'; // 'Theia Browser Example';
 
@@ -104,6 +106,9 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 						this._context.globalState.update('access_token', message.access_token);
 						this._context.globalState.update('project_name', message.project_name);
 						return;
+					case 'open-file':
+						openFile(message.url, this._extensionUri);
+						return;
 				}
 			},
 			undefined,
@@ -123,10 +128,10 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 
 		// TODO move context generation into this file ?
 		// Manage context files
-		// const projectFile = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-		// console.log(projectFile)
-		// const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
-		// contextReader.generateContexts();
+		const projectFile = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		// console.log("PROJECT: " + projectFile);
+		const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
+		contextReader.generateContexts(projectFile || '');
 
 		let userContextContent: any;
 		let projectContextContent: any;
@@ -370,4 +375,11 @@ function showErrorNotification(message: ErrorObject, webviewView: vscode.Webview
 function parseCommand(text: string) {
 	const list = text.match(/```.*\n(.*)\n```/) || [];
 	return list.length > 0 ? list[1] : '';
+}
+
+async function openFile(filename: string, extensionUri: vscode.Uri) {
+	const extUri = vscode.workspace.workspaceFolders?.at(0)?.uri || extensionUri;
+	let uri = vscode.Uri.joinPath(extUri, filename).fsPath;
+    let doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc, { preview: false });
 }
