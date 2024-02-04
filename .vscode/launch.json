@@ -10,7 +10,7 @@
             ],
             "name": "Launch VSC Extension",
             "outFiles": [
-                "${workspaceRoot}/extensions/ai-assistant-vsc/out/**/*.js"
+                "${workspaceRoot}/extensions/ai-assistant-vsc/lib/**/*.js"
             ],
             "preLaunchTask": "${defaultBuildTask}",
             "request": "launch",

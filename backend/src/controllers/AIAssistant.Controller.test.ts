@@ -30,9 +30,11 @@ describe("Create the App with controllers and check that we get a response", () 
   const expectedAnswer: MessageResponse = {
     content: { role: "assistant", content: "Hello" },
   };
+  const expectedReadME = "This is a readme";
   const fakeAIAssistant = {
     getAnswer: jest.fn(() => Promise.resolve(expectedAnswer)),
     summarizeMessages: jest.fn(() => Promise.resolve([])),
+    generateReadME: jest.fn(() => Promise.resolve(expectedReadME)),
   };
 
   const fakeOAuthService: OAuthService = {
@@ -150,4 +152,18 @@ describe("Create the App with controllers and check that we get a response", () 
       expect(response.body).toEqual({});
     });
   }
+
+  // TODO: Add tests for good path for generateReadME 
+  // (Need to fix so that it doesn't return 401 for valid access_token in test environment)
+  it("Should return 401 for invalid access_token", async () => {
+    const response = await request(app)
+      .post(AIASSISTANTSERVICE_BACKEND_PATH + "/generateReadME")
+      .send({
+        messages: [{ role: "user", content: "Hello" }],
+        access_token: "dummy",
+        project_name: "dummy",
+      });
+
+    expect(response.status).toBe(401);
+  });
 });

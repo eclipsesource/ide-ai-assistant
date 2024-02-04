@@ -112,8 +112,8 @@ export class MongoDB implements Database {
     }
 
     const testDiscussion = await discussionService.createDiscussion(testUser, defaultProject);
-    messageService.createMessage(testDiscussion, "user", "test message", null);
-    messageService.createMessage(testDiscussion, "assistant", "test response", null);
+    messageService.createMessage(testDiscussion, "user", "I am struggling to run the debugger in vscode", null);
+    messageService.createMessage(testDiscussion, "assistant", "Based on the information provided it seems that the launch configuration is incorrect. Please change the outfiles", null);
     messageService.createMessage(testDiscussion, "user", "test request 2", null);
     messageService.createMessage(testDiscussion, "assistant", "test response 2", null);
   }
