@@ -236,10 +236,11 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 				switch (message.command) {
 					case 'generateReadME':
 						let request = message.request;
+						vscode.window.showInformationMessage('Generating new README.md file');
 
 						// Add original README to the request
 						if (!vscode.workspace.workspaceFolders) {
-							vscode.window.showInformationMessage('No workspace opened');
+							vscode.window.showWarningMessage('AI Assistant could not generate new README, no workspace opened');
 							return;
 						}
 						const filePath = vscode.workspace.workspaceFolders[0].uri.fsPath + '\\README.md';
