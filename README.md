@@ -20,9 +20,17 @@ To install and build the extensions and apps use the command
 
     yarn
 
+### Setting needed variables
+
 For the Backend to work a API KEY to OpenAI needs to be provided.
 This can be done by creating a file `backend/secrets.env` as this is ignored by git, then set `API_KEY = [YOUR KEY]`.
 
+For the moment there is an API missing in theia needed for the log in. 
+So to run the application in theia you need to set a personal access token from github in the [loginScript.js](./extensions/ai-assistant-vsc/src/resources/loginScript.js) in the function [setupLogin](https://github.com/eclipsesource/ide-ai-assistant/blob/83539ba60f2aa967bb6aeecbf8738faaf634af9f/extensions/ai-assistant-vsc/src/resources/loginScript.js#L23). Insert your PAT here.
+
+```ts
+this.access_token = "[Your access token]";
+```
 There are several ways to start the program. 
 
 ## Running the browser app with plugins
@@ -32,7 +40,7 @@ If you want to run the Theia browser app with the plugins and the backend, we re
 
 or 
     
-launching with the vscode configuration `Theia IDE` and starting the backend workspace seperatly
+launching with the vscode configuration `Theia IDE` and starting the backend workspace separately
 Vscode will also automatically launch chrome.
 
 ## Running the browser example
