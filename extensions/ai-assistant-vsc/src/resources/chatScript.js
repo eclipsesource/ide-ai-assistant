@@ -1,5 +1,4 @@
 class ChatApp {
-  project_name = "@theia/monorepo";
 
   constructor(access_token) {
     this.access_token = access_token;
@@ -18,12 +17,14 @@ class ChatApp {
     // Get contexts
     this.contexts = { user: userContext, project: projectContext };
 
+    // This is a debug line to remove all messages stored within the extension, uncomment to reset messages.
+    // vscode.setState({ access_token: vscode.getState()?.access_token || this.access_token });
+    
     // Retrieve messages from the state
-    vscode.setState({ access_token: vscode.getState()?.access_token || this.access_token }); // To uncomment if needed to reset messages
     this.loadMessages();
 
     // Set variables to pass them to the other panel.
-    vscode.postMessage({ command: "set-variables", access_token: this.access_token, project_name: this.project_name });
+    vscode.postMessage({ command: "set-access-token", access_token: this.access_token });
   }
 
   loadMessages() {
@@ -228,7 +229,7 @@ class ChatApp {
       projectContext: this.contexts.project,
       userContext: this.contexts.user,
       access_token: this.access_token,
-      project_name: this.project_name,
+      project_name: projectName,
     };
 
     const command = debug ? "debug-command" : "message";
@@ -309,7 +310,7 @@ class ChatApp {
     return {
       path: file.filePath,
       name: file.fileName,
-    }
+    };
   }
 
   getIssueDetails(tool_call) {
@@ -318,17 +319,17 @@ class ChatApp {
       issueNumber: issue.issueNumber,
       issueDescription: issue.issueDescription,
       issueSolution: issue.issueSolution
-    }
+    };
   }
 
   async getGithubIssue(issueNumber) {
-    // TODO: Remove hardcoding
+    // TODO: Remove hardcoding Issue #56
     const issue = {
       ownerName: "eclipse-theia",
       repoName: "theia",
       issueNumber: issueNumber
-    }
-    const request = { accessToken: this.access_token, issue: issue }
+    };
+    const request = { accessToken: this.access_token, issue: issue };
     const endpoint = BACKEND_URL + '/github/issue';
     try {
       const response = await fetch(endpoint, {
@@ -339,7 +340,7 @@ class ChatApp {
         }
       });
       const json = await response.json();
-      let newMessage = `The issue is titled ${json.issue.repository.issue.title}. `
+      let newMessage = `The issue is titled ${json.issue.repository.issue.title}. `;
       newMessage += `This is the issue description. Explain the issue and give code with explanation to solve the issue. ${json.issue.repository.issue.body}`;
       this.allMessages.push({ role: 'user', text: newMessage });
       this.getAPIResponse();

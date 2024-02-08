@@ -48,9 +48,9 @@ export class AIAssistantController {
   async summarizeMessages(req: Request, res: Response) {
     const projectName = decodeURIComponent(req.params.project_name);
     const user = await this.getUser(req.headers.authorization || null);
-    const project = await this.databaseService.projectService.getProjectByName(projectName);
+    const project = await this.getProject(projectName);
 
-    if (!project || !project.projectLeads.includes(user._id)) {
+    if (!project.projectLeads.includes(user._id)) {
       throw new Error(`User ${user.login} is not a project lead of project ${projectName}`);
     }
 

@@ -20,7 +20,7 @@ class GitHubOAuth {
     async setupLogin() {
         if (isTheia) {
             // Disable github Oauth for theia
-            this.access_token = "[Your access token]";
+            this.access_token = "[Your github access token]";
             this.handleConnection();
             return;
         }
