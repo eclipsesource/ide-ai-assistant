@@ -106,7 +106,7 @@ export class MongoDB implements Database {
     const messageService = new MessageService();
 
     const testUser = await userService.getUserByLogin("test");
-    const defaultProject = await projectService.getProjectByName("@theia/monorepo");
+    const defaultProject = await projectService.getProjectByName("ai-assistant");
     if (!testUser || !defaultProject) {
       throw new Error("User or project test not found");
     }

@@ -7,11 +7,11 @@
     {
         "login": "Stibreant",
         "role": "admin",
-        "projectLeads": []
+        "projectLeads": ["@theia/monorepo", "ai-assistant"]
     },
     {
         "login": "test",
         "role": "user",
-        "projectLeads": ["@theia/monorepo"]
+        "projectLeads": ["@theia/monorepo", "ai-assistant"]
     }
 ]
