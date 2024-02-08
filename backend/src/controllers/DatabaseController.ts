@@ -63,13 +63,10 @@ export class DatabaseController {
     const projectName = decodeURIComponent(req.params.projectName);
     const user = await this.getUser(req.headers.authorization || null);
     const project = await this.databaseService.projectService.getProjectByName(projectName);
-    if (!project) {
-      throw new Error(`Project with name ${projectName} does not exist`);
+    if (!project || !project.projectLeads.includes(user._id)) {
+      throw new Error(`User ${user.login} is not a project lead of project ${projectName}`);
     }
-    if (project.projectLeads.includes(user._id)) {
-      return res.status(200).json({ message: 'User is a project lead' });
-    }
-    return res.status(401).json({ error: `User ${user.login} is not a project lead of project ${projectName}` });
+    return res.status(200).json({ message: 'User is a project lead' });
   }
 
   async getUser(access_token: string | null): Promise<UserType> {

@@ -2,7 +2,6 @@ const vscode = acquireVsCodeApi();
 const BACKEND_URL = 'http://localhost:3001';
 const infoDiv = document.getElementById('info');
 
-var project_name = null;
 var access_token = null;
 var isDarkMode = (getComputedStyle(document.body).getPropertyValue('--vscode-editor-foreground') === "#1f1f1f");
 
@@ -46,7 +45,7 @@ class HistoryManager {
         }
 
         // Here send messages and do something with receiving
-        infoDiv.textContent = `${selectedMessages.length} messages would be sent right now.`;
+        infoDiv.textContent = `Generating the ReadME...`;
         this.postGenerateReadmeMessage(selectedMessages);
     }
     
@@ -61,7 +60,7 @@ class HistoryManager {
             projectContext: this.contexts.project,
             userContext: this.contexts.user,
             access_token: access_token,
-            project_name: project_name,
+            project_name: projectName,
         };
         
         vscode.postMessage({ command: 'generateReadME', request: request});
@@ -70,49 +69,48 @@ class HistoryManager {
 
     async handleConnection() {
         const mainDiv = document.getElementById("container");
-        const encodedProjectName = encodeURIComponent(project_name);
+        const encodedProjectName = encodeURIComponent(projectName);
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${access_token}`
         };
 
-        fetch(`${BACKEND_URL}/database/isProjectLead/${encodedProjectName}`, {
-            method: 'GET',
-            headers: headers,
-        })
-        .then(async response => {
+        try{
+            const response = await fetch(`${BACKEND_URL}/database/isProjectLead/${encodedProjectName}`, {
+                method: 'GET',
+                headers: headers,
+            });
+            const json = await response.json();
+            
+            // We expect when the response is not ok to have an error message in the json.
             if (!response.ok) {
-                const err = await response.json();
-                throw err.error;
+                throw json.error;
             }
-            return response.json();
-        }).then(() => {
+
             mainDiv.style.display = "flex";
             this.setupMessages();
-        }).catch((error) => {
+
+        } catch (err) {
             mainDiv.style.display = "block";
-            mainDiv.innerHTML = `<p> An error occured while fetching messages: \n ${error} </p>`;
+            mainDiv.innerHTML = `<p> An error occured while fetching messages. If case you just switched workspaces, try reloading. 
+            <br\> ${err.type}: <br\> ${err.errorMessage} </p>`;
             return;
-        });
+        }
     }
 
     async setupMessages() {
         const bodyPlaceholder = document.getElementById("no-messages");
-
+ 
         bodyPlaceholder.textContent = "Fetching and summarizing messages...";
         let summarizedMessages = [];
 
-        try {
-            summarizedMessages = await this.summarizeMessages();
+        summarizedMessages = await this.summarizeMessages();
 
-            if (summarizedMessages.length < 2) {
-                bodyPlaceholder.textContent = "No messages received";
-                return;
-            }
-        } catch (error) {
-            bodyPlaceholder.textContent = "An error occured while fetching messages: \n" + error;
+        if (summarizedMessages.length < 2) {
+            bodyPlaceholder.textContent = "No messages received";
             return;
         }
+
         bodyPlaceholder.textContent = "";
 
         const messagesContainer = document.getElementById('messages-list');
@@ -129,7 +127,7 @@ class HistoryManager {
     }
 
     async summarizeMessages() {
-        const encodedProjectName = encodeURIComponent(project_name);
+        const encodedProjectName = encodeURIComponent(projectName);
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${access_token}`
@@ -203,28 +201,30 @@ class MessageBlock {
     }
 }
 
+
 // This is how we retreive from the extension the project name and the access token.
 window.addEventListener("message", (event) => {
     const message = event.data;
     switch (message.command) {
-        case "get-variables":
-            project_name = message.project_name;
+        case "get-access-token":
             access_token = message.access_token;
             break;
-    }
-});
-
+        }
+    });
+    
 function main() {
+    // This function is present to retreive access token from the extension (which comes from the other AI Assistant panel).
     const _historyManager = new HistoryManager();
     let intervalId = setInterval(() => {
-        if (access_token !== null && project_name !== null) {
+        // When access_token is retreived, we can initialize the history manager.
+        if (access_token !== null) {
             _historyManager.handleConnection();
             clearInterval(intervalId);
         } else {
-            vscode.postMessage({ command: "get-variables" });
+            vscode.postMessage({ command: "get-access-token" });
         }
     }, 200);
 }
 
-vscode.postMessage({ command: "get-variables" });
+vscode.postMessage({ command: "get-access-token" });
 setTimeout(main, 20);

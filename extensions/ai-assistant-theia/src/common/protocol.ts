@@ -11,7 +11,6 @@ export type chatMessage = {
 export const AIAssistantBackendService = Symbol('AIAssistantBackendService');
 export const AIASSISTANTSERVICE_BACKEND_PATH = '/services/aiAssistantBackend';
 
-// TODO: The interface will probably change with more messsages and context added
 export interface AIAssistantBackendService extends JsonRpcServer<BackendClient> {
     getAnswer(question: string): Promise<chatMessage>
 }

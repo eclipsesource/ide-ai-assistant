@@ -14,8 +14,7 @@ class MyTerminalObserver {
     private provider: AIAssistantProvider;
     private lastError: string = '';
 
-    // TODO Regex is set to specifically work during the demo, needs to be updated later
-    outputMatcherRegex = "error ai.*";
+    outputMatcherRegex = "error *";
     nrOfLinesToMatch = 40;
     matchOccurred(groups: string[]): void {
         if (groups[0] === this.lastError) {

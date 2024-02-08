@@ -16,8 +16,6 @@ export class OpenAIAssistantImpl implements AIAssistantBackendService {
         //this.client = client;
     }
 
-    // TODO: This API can fail and we would need to handle that. I believe we need to look into choices[0].finish_reason
-    // Also adding all previous chatMessages would be nice, also add context
     async getAnswer(question: string): Promise<chatMessage> {
         if (openai.apiKey == "") {
             return new Promise<chatMessage>((resolve, reject) => (reject("No API Key")));

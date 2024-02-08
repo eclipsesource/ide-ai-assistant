@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-const fs = require('fs');
+import fs = require('fs');
 
 const BACKEND_URL = 'http://localhost:3001';
 interface ErrorObject {
@@ -9,7 +9,6 @@ interface ErrorObject {
 }
 import { activateTheia } from './theia';
 import { NodeContextReader } from './context/nodeContextReader';
-import path = require('path');
 
 const THEIA_APP_NAME = 'Eclipse Theia'; // 'Theia Browser Example';
 
@@ -123,9 +122,8 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 					case 'info':
 						vscode.window.showInformationMessage(message.text);
 						return;
-					case 'set-variables':
+					case 'set-access-token':
 						this._context.globalState.update('access_token', message.access_token);
-						this._context.globalState.update('project_name', message.project_name);
 						return;
 					case 'open-file':
 						openFile(message.url, this._extensionUri);
@@ -147,14 +145,13 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 		const chatStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'chatStyle.css'));
 		const nonce = getNonce();
 
-		// TODO move context generation into this file ?
 		// Manage context files
-		const projectFile = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-		// console.log("PROJECT: " + projectFile);
-		const contextReader = new NodeContextReader(path.join(this._extensionUri.fsPath, 'package.json'));
-		contextReader.generateContexts(projectFile || '');
+		const rootDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const contextReader = new NodeContextReader(rootDir);
+		contextReader.generateContexts();
+		const projectName = contextReader.getProjectName();
 
-		let [userContextContent, projectContextContent] = getContext(this._extensionUri);
+		const [userContextContent, projectContextContent] = getContext(this._extensionUri);
 
 		return /*html*/`
 			<!DOCTYPE html>
@@ -191,6 +188,7 @@ export class AIAssistantProvider implements vscode.WebviewViewProvider {
 					const isTheia = ${vscode.env.appName === THEIA_APP_NAME};
 					const userContext = ${JSON.stringify(userContextContent)};
 					const projectContext = ${JSON.stringify(projectContextContent)};
+					const projectName = ${JSON.stringify(projectName)};
 				</script>
 
 				<script nonce="${nonce}" src="${chatScriptUri}"></script>
@@ -236,7 +234,7 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 				switch (message.command) {
 					case 'generateReadME':
 						let request = message.request;
-						vscode.window.showInformationMessage('Generating new README.md file');
+						// vscode.window.showInformationMessage('Generating new README.md file');
 
 						// Add original README to the request
 						if (!vscode.workspace.workspaceFolders) {
@@ -277,9 +275,9 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 					case 'message':
 						vscode.window.showInformationMessage(message.text);
 						return;
-					case 'get-variables':
+					case 'get-access-token':
 						vscode.window.showInformationMessage(message);
-						webviewView.webview.postMessage({ command: 'get-variables', access_token: this._context.globalState.get('access_token'), project_name: this._context.globalState.get('project_name') });
+						webviewView.webview.postMessage({ command: 'get-access-token', access_token: this._context.globalState.get('access_token') });
 						return;
 				}
 			},
@@ -312,7 +310,13 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 		const arrowImageUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'src/resources', 'arrow.png'));
 		const nonce = getNonce();
 
-		let [userContextContent, projectContextContent] = getContext(this._extensionUri);
+		// Manage context files
+		const rootDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const contextReader = new NodeContextReader(rootDir);
+		contextReader.generateContexts();
+		const projectName = contextReader.getProjectName();
+
+		const [userContextContent, projectContextContent] = getContext(this._extensionUri);
 
 		return /*html*/`
 			<!DOCTYPE html>
@@ -326,6 +330,7 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 				<script nonce=${nonce}>
 					const userContext = ${JSON.stringify(userContextContent)};
 					const projectContext = ${JSON.stringify(projectContextContent)};
+					const projectName = ${JSON.stringify(projectName)};
 				</script>
 				<script defer nonce="${nonce}" src="${historyScriptUri}"></script>
 
@@ -395,40 +400,10 @@ function getNonce() {
 	return text;
 }
 
-// TODO: will be implemented after the demo
-
-// Check if a terminal exists
-// function ensureTerminalExists(): boolean {
-// 	if ((<any>vscode.window).terminals.length === 0) {
-// 		vscode.window.showErrorMessage('No active terminals');
-// 		return false;
-// 	}
-// 	return true;
-// }
-
 // Function to select an active terminal
 function getActiveTerminal(): vscode.Terminal | undefined {
 	return vscode.window.activeTerminal;
 }
-
-// TODO: will be implemented after the demo
-// Picker to select terminals when there are multiple
-// function selectTerminal(): Thenable<vscode.Terminal | undefined> {
-
-// 	interface TerminalQuickPickItem extends vscode.QuickPickItem {
-// 		terminal: vscode.Terminal;
-// 	}
-// 	const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
-// 	const items: TerminalQuickPickItem[] = terminals.map(t => {
-// 		return {
-// 			label: `name: ${t.name}`,
-// 			terminal: t
-// 		};
-// 	});
-// 	return vscode.window.showQuickPick(items).then(item => {
-// 		return item ? item.terminal : undefined;
-// 	});
-// }
 
 function showErrorNotification(message: ErrorObject, webviewView: vscode.WebviewView) {
 	vscode.window.showInformationMessage(message.linkData, 'Yes', 'No').then(action => {
