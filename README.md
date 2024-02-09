@@ -25,7 +25,7 @@ To install and build the extensions and apps use the command
 For the Backend to work a API KEY to OpenAI needs to be provided.
 This can be done by creating a file `backend/secrets.env` as this is ignored by git, then set `API_KEY = [YOUR KEY]`.
 
-For the moment there is an API missing in theia needed for the log in. 
+For the moment there is an API missing in theia needed for the log in in our extenstion, this API should be coming soon! (Ref: [issue #13169](https://github.com/eclipse-theia/theia/issues/13169) and in our repo [#55](https://github.com/eclipsesource/ide-ai-assistant/issues/55)).
 So to run the application in theia you need to set a personal access token from github in the [loginScript.js](./extensions/ai-assistant-vsc/src/resources/loginScript.js) in the function [setupLogin](https://github.com/eclipsesource/ide-ai-assistant/blob/83539ba60f2aa967bb6aeecbf8738faaf634af9f/extensions/ai-assistant-vsc/src/resources/loginScript.js#L23). Insert your PAT here.
 
 ```ts
