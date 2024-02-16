@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { NodeContextReader } from './context/nodeContextReader';
+import { activateTheia } from './theia';
 import fs = require('fs');
 
 const BACKEND_URL = 'http://localhost:3001';
@@ -7,8 +9,6 @@ interface ErrorObject {
 	linkData: string;
 	errorMsg: string;
 }
-import { activateTheia } from './theia';
-import { NodeContextReader } from './context/nodeContextReader';
 
 const THEIA_APP_NAME = 'Eclipse Theia'; // 'Theia Browser Example';
 
@@ -241,15 +241,15 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 							vscode.window.showWarningMessage('AI Assistant could not generate new README, no workspace opened');
 							return;
 						}
-						const filePath = vscode.workspace.workspaceFolders[0].uri.fsPath + '\\README.md';
+						const filePath = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'README.md');
 						const fileSystem = vscode.workspace.fs;
-						let originalContent = await fileSystem.readFile(vscode.Uri.file(filePath));
+						let originalContent = await fileSystem.readFile(filePath);
 						request.readme = originalContent.toString();
 
 						const newReadME = await this.sendGenerateReadMERequest(request);
 
 						// Create a new untitled file
-						const uri = vscode.Uri.parse("untitled:" + vscode.workspace.workspaceFolders[0].uri.fsPath + "/GeneratedReadME.md");
+						const uri = vscode.Uri.parse("untitled:" + vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, "GeneratedReadME.md"));
 						const document = await vscode.workspace.openTextDocument(uri);
 						const editor = new vscode.WorkspaceEdit();
 						editor.insert(uri, new vscode.Position(0, 0), newReadME);
@@ -257,7 +257,7 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 
 						// Show the diff between the original content and the new file
 						await vscode.workspace.openTextDocument(filePath);
-						vscode.commands.executeCommand("vscode.diff", vscode.Uri.file(filePath), uri);
+						vscode.commands.executeCommand("vscode.diff", filePath, uri);
 
 						vscode.window.showInformationMessage("Do you want to overwrite the readme", 'Yes', 'No').then(async action => {
 							if (action === 'Yes') {
@@ -265,7 +265,7 @@ export class AIAssistantHistoryProvider implements vscode.WebviewViewProvider {
 								const newContent = document.getText();
 
 								// Write the content of File B to File A
-								await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(newContent));
+								await vscode.workspace.fs.writeFile(filePath, Buffer.from(newContent));
 							}
 							if (action === 'No') {
 								vscode.window.showInformationMessage('You can manually make changes and save the file');
@@ -423,6 +423,6 @@ function parseCommand(text: string) {
 async function openFile(filename: string, extensionUri: vscode.Uri) {
 	const extUri = vscode.workspace.workspaceFolders?.at(0)?.uri || extensionUri;
 	let uri = vscode.Uri.joinPath(extUri, filename).fsPath;
-    let doc = await vscode.workspace.openTextDocument(uri);
-    await vscode.window.showTextDocument(doc, { preview: false });
+	let doc = await vscode.workspace.openTextDocument(uri);
+	await vscode.window.showTextDocument(doc, { preview: false });
 }
