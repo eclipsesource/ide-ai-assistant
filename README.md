@@ -31,7 +31,20 @@ So to run the application in theia you need to set a personal access token from 
 ```ts
 this.access_token = "[Your access token]";
 ```
-There are several ways to start the program. 
+
+### Terminal Observer
+The terminal observer functionality in Theia is currently available in this [branch](https://github.com/tsmaeder/theia/tree/13085_terminal_observer). 
+To use the terminal observer functionality the extension needs to be run in this branch. 
+This requires five steps:
+
+1. Clone the [branch](https://github.com/tsmaeder/theia/tree/13085_terminal_observer) and install dependencies with `yarn`.
+2. Create a "plugins" folder in the root directory of the newly cloned branch.
+3. Copy the folder for the extension [ai-assistant-vsc](./extensions/ai-assistant-vsc/) into the "plugins" of the cloned repository. You should now have this `plugins/ai-assistant-vsc` file structure in your root directory.
+5. Verify that the [THEIA_APP_NAME](https://github.com/eclipsesource/ide-ai-assistant/blob/a37f638a099bb594fe539fda6433cf5135615a68/extensions/ai-assistant-vsc/src/extension.ts#L13) matches the name of the example you will be running.
+E.g. for the browser example in the Theia repo, the app name is `Theia Browser Example`
+4. Navigate to the extension's directory and compile the extension by running `yarn compile`.
+
+Now when you start one of the Theia examples the terminal observer will be working.
 
 ## Running the browser app with plugins
 If you want to run the Theia browser app with the plugins and the backend, we recommend using 
